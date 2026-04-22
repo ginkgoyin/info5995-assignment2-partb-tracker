@@ -7,11 +7,13 @@
 - Program URL: `https://hackerone.com/semrush`
 - Program overview section reviewed: Yes
 - Key overview excerpt:
-  - `This includes following this policy ("Policy"), HackerOne’s Disclosure Guidelines and any other relevant agreements.`
+  - `Semrush - Bug Bounty Program | HackerOne`
+  - `The Semrush Bug Bounty Program enlists the help of the hacker community at HackerOne to make Semrush more secure.`
   - `Test only with your own account(s) when investigating bugs.`
 - Scope proof:
   - The teacher-approved starting platform is HackerOne.
   - The official HackerOne Bug Bounty Programs page currently lists `Semrush` as a public bug bounty program.
+  - The raw HTML of the direct program page `https://hackerone.com/semrush?type=team` was fetched and reviewed.
   - The same official HackerOne listing snippet includes an explicit policy excerpt requiring testing only with the researcher's own account(s).
 - Scope page URL: `https://hackerone.com/semrush/policy_scopes?type=team`
 - Official website URL: `https://www.semrush.com/`
@@ -57,13 +59,15 @@
 1. Confirmed that the teacher-approved starting platform remains HackerOne.
 2. Chose `Semrush` as the next target because the official HackerOne Bug Bounty Programs page lists it publicly and includes a useful policy excerpt: test only with your own account(s).
 3. Recorded the direct HackerOne program URL as `https://hackerone.com/semrush`.
-4. Reviewed the official HackerOne Bug Bounty Programs page snippet for the Semrush program and extracted the policy-relevant overview lines before testing.
-5. Reviewed the Semrush homepage `https://www.semrush.com/` and confirmed public `Log In`, `Sign Up`, and `Try for free` entry points.
-6. Reviewed the Semrush pricing page and confirmed the public seven-day trial messaging.
-7. Fetched the Semrush public signup page source and confirmed that it loads an SPA auth shell with CSRF state and signup-related auth metadata.
-8. Fetched the Semrush public login page source and confirmed that it loads an SPA auth shell with CSRF state and login-related auth metadata.
-9. Reviewed the fetched public auth-page source for obvious blockers or constraints, including visible captcha references, and did not observe an obvious captcha script in the fetched HTML.
-10. Stopped after the first public/auth-entry review because higher-value bug classes for this target still appear to depend on real account creation and authenticated workflows.
+4. Fetched and reviewed the raw HTML of the direct HackerOne Semrush program page and extracted the program title and description metadata before testing.
+5. Reviewed the official HackerOne Bug Bounty Programs page snippet for the Semrush program and extracted the policy-relevant rule to test only with owned accounts.
+6. Fetched the raw HTML of the direct HackerOne Semrush scope page URL and confirmed that the scope page itself is reachable, even though its asset details are rendered client-side.
+7. Reviewed the Semrush homepage `https://www.semrush.com/` and confirmed public `Log In`, `Sign Up`, and `Try for free` entry points.
+8. Reviewed the Semrush pricing page and confirmed the public seven-day trial messaging.
+9. Fetched the Semrush public signup page source and confirmed that it loads an SPA auth shell with CSRF state and signup-related auth metadata.
+10. Fetched the Semrush public login page source and confirmed that it loads an SPA auth shell with CSRF state and login-related auth metadata.
+11. Reviewed the fetched public auth-page source for obvious blockers or constraints, including visible captcha references, and did not observe an obvious captcha script in the fetched HTML.
+12. Stopped after the first public/auth-entry review because higher-value bug classes for this target still appear to depend on real account creation and authenticated workflows.
 
 ## 5. Evidence
 - Important URLs:
@@ -88,8 +92,9 @@
     - `formAction` set to `/login` in embedded initial state
 - Screenshots / recordings: None yet.
 - Notes:
-  - The direct HackerOne program URL is recorded even though the environment cannot render the full JavaScript-heavy program page content directly.
-  - The official HackerOne Bug Bounty Programs page was used as the primary official source for the Semrush program listing and policy excerpt.
+  - The raw HTML of the direct HackerOne program page was fetched successfully and provided the official program title and description metadata.
+  - The raw HTML of the direct HackerOne scope page was fetched successfully, but the asset details themselves still require client-side rendering.
+  - The official HackerOne Bug Bounty Programs page was still useful as the direct source for the explicit owned-account testing rule.
   - The official Semrush public pages clearly expose account entry points and a seven-day trial path.
   - No obvious unauthenticated vulnerability was observed on the reviewed public pages.
   - No obvious captcha blocker was visible in the fetched Semrush signup HTML, so authenticated testing may be easier to advance here than it was for Basecamp.
@@ -98,6 +103,7 @@
 - Result: No finding
 - What worked:
   - Selected a second concrete HackerOne program and avoided retesting Basecamp.
+  - Read the direct HackerOne Semrush program page through raw HTML instead of relying only on the general program listing.
   - Confirmed that the official HackerOne listing for Semrush includes a directly relevant rule: use only your own account(s).
   - Confirmed that Semrush exposes public signup and login entry points and a trial workflow.
   - Confirmed that the fetched signup and login pages expose concrete auth application scaffolding rather than only marketing redirects.
