@@ -60,6 +60,8 @@
   - The HackerOne scope page rendered successfully in headless Edge.
   - The rendered page shows `Assets In Scope: 16`.
   - The rendered page also exposes a `Submit without Report Assistant` report link for the Basecamp program.
+  - The rendered scope page includes `3.basecamp.com` as an eligible in-scope asset.
+  - The rendered scope page includes `launchpad.37signals.com` as an eligible in-scope asset.
 - Test-account viability observations:
   - The official `try-basecamp` page publicly exposes normal account-creation links.
   - Visible plan-based signup links include `free_v1`, `per_user_v3`, and `pro_unlimited_yearly_v1`.
@@ -94,6 +96,7 @@
 11. Stopped after passive public-page review because authenticated flows still appear to be the more promising path for access-control issues, and no public-page issue was strong enough to support a finding.
 12. Rendered the HackerOne Basecamp scope page and confirmed that the program currently advertises `16` in-scope assets.
 13. Confirmed that Basecamp's public pricing / trial page exposes standard account-creation flows, making authenticated testing appear feasible from a workflow perspective.
+14. Confirmed from the rendered scope page that `3.basecamp.com` and `launchpad.37signals.com` are explicitly listed as eligible in-scope assets.
 
 ## 5. Evidence
 - Important URLs:
@@ -120,6 +123,7 @@
 - Notes:
   - Verified the HackerOne program Overview before testing and extracted the focus areas from the rendered page.
   - Verified the HackerOne scope page before planning authenticated testing.
+  - Verified that both the public signup flow target (`3.basecamp.com`) and login flow target (`launchpad.37signals.com`) appear in the rendered in-scope list.
   - Public pages reviewed in this round did not expose an obvious unauthenticated vulnerability.
   - The support page has public form inputs, but there is not enough evidence from passive review alone to claim reflected XSS or another finding.
   - The public support form posts to `dash.37signals.com/support/tickets`, but no form submission or tampering was performed in this round.
@@ -134,6 +138,7 @@
   - Completed an initial passive review of Basecamp public pages without creating risk for the target.
   - Completed baseline categories 2-4 at the public-surface level and completed a first product-specific customized review.
   - Confirmed that authenticated testing looks operationally feasible because public account-creation links are exposed on the official site.
+  - Confirmed that the likely authenticated entry points we care about are represented in the rendered in-scope asset list.
 - What failed:
   - Could not reach authenticated workflows in this round, so IDOR and horizontal access-control testing could not start yet.
 - Why no finding was confirmed yet:
@@ -173,7 +178,6 @@
 
 ## 10. Next Actions
 - Follow-up validation needed:
-  - Enumerate exact asset names from the rendered scope page before testing specific subdomains or product surfaces.
   - Create test accounts only if the program rules allow the selected workflow.
   - If account creation is allowed, move to authenticated tests for IDOR, horizontal access control, and input handling.
 - Questions for teammates:
