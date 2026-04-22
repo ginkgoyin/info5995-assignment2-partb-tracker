@@ -28,6 +28,9 @@
   - Basecamp official site shows free sign-up is available.
   - Public pricing/trial links point to `https://3.basecamp.com/signup/account/new?...`
   - This makes it a good candidate for authenticated authorization testing later.
+  - The login page at `https://launchpad.37signals.com/signin` is a real form flow with a local `/session` POST action plus a Google sign-in option.
+  - The free signup page at `https://3.basecamp.com/signup/account/new?plan=free_v1` is a real form flow with a `/signup/account` POST action.
+  - The free signup form collects `full_name`, `email_address`, `company_name`, agreement to terms, and then a password of at least `12` characters.
 - Role setup: Not started.
 
 ## 3. Testing Summary
@@ -97,6 +100,8 @@
 12. Rendered the HackerOne Basecamp scope page and confirmed that the program currently advertises `16` in-scope assets.
 13. Confirmed that Basecamp's public pricing / trial page exposes standard account-creation flows, making authenticated testing appear feasible from a workflow perspective.
 14. Confirmed from the rendered scope page that `3.basecamp.com` and `launchpad.37signals.com` are explicitly listed as eligible in-scope assets.
+15. Fetched the public Basecamp login page source and confirmed that it contains a local `/session` login form, CSRF tokens, and a Google sign-in flow.
+16. Fetched the public Basecamp free-signup page source and confirmed that it contains a local `/signup/account` account-creation form with `full_name`, `email_address`, `company_name`, terms acceptance, and password setup.
 
 ## 5. Evidence
 - Important URLs:
@@ -119,11 +124,18 @@
   - `https://3.basecamp.com/signup/account/new?plan=per_user_v3`
   - `https://3.basecamp.com/signup/account/new?plan=pro_unlimited_yearly_v1`
 - Important requests/responses: None yet.
+- Pre-authentication form observations:
+  - Login page form action: `/session`
+  - Login page also includes a Google sign-in POST flow via `/google_sign_in/authorization`
+  - Signup page form action: `/signup/account`
+  - Signup page validation endpoints referenced in DOM: `/signup/lookup` and `/signup/validation.json`
+  - Signup page requires terms acceptance and indicates a minimum password length of `12` characters
 - Screenshots / recordings: None yet.
 - Notes:
   - Verified the HackerOne program Overview before testing and extracted the focus areas from the rendered page.
   - Verified the HackerOne scope page before planning authenticated testing.
   - Verified that both the public signup flow target (`3.basecamp.com`) and login flow target (`launchpad.37signals.com`) appear in the rendered in-scope list.
+  - Verified that both the signup and login pages are normal HTML form flows rather than marketing-only redirects.
   - Public pages reviewed in this round did not expose an obvious unauthenticated vulnerability.
   - The support page has public form inputs, but there is not enough evidence from passive review alone to claim reflected XSS or another finding.
   - The public support form posts to `dash.37signals.com/support/tickets`, but no form submission or tampering was performed in this round.
@@ -139,12 +151,13 @@
   - Completed baseline categories 2-4 at the public-surface level and completed a first product-specific customized review.
   - Confirmed that authenticated testing looks operationally feasible because public account-creation links are exposed on the official site.
   - Confirmed that the likely authenticated entry points we care about are represented in the rendered in-scope asset list.
+  - Confirmed that the login and signup entry points expose concrete application form flows that can support later account-based testing.
 - What failed:
   - Could not reach authenticated workflows in this round, so IDOR and horizontal access-control testing could not start yet.
 - Why no finding was confirmed yet:
   - No obvious unauthenticated issue was observed on the reviewed public pages.
-  - Exact asset names from the in-scope list have not yet been individually enumerated from the rendered scope page.
   - The highest-value bug classes for this target likely require authenticated workflows.
+  - Although the pre-authentication forms are confirmed, actual account creation and role setup have not started yet.
 
 ## 7. Candidate Finding Details
 - Vulnerability title: None yet.
