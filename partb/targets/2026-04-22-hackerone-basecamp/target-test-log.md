@@ -107,6 +107,9 @@
 18. User later confirmed that a real Basecamp account was manually created and logged in through local Chrome `Default` profile at `https://3.basecamp.com/6199215/projects`.
 19. Attempted to reuse the existing authenticated Chrome session by copying login-related profile state into a temporary workspace profile.
 20. Confirmed that Chrome's running `Default\\Network\\Cookies` database is locked by the active browser process, so the current environment could not non-disruptively clone the live authenticated session.
+21. After the user fully closed Chrome, successfully copied the original `Default\\Network\\Cookies` database bytes and related local state into a temporary workspace profile.
+22. Attempted to access the logged-in Basecamp workspace through a temporary Chrome profile, but the copied session could not be decrypted reliably in the new profile context.
+23. Attempted a second path by launching Chrome directly against the original `Default` profile with a remote debugging port and the logged-in Basecamp URL, but no usable debugging endpoint became available.
 
 ## 5. Evidence
 - Important URLs:
@@ -140,6 +143,9 @@
   - User-provided logged-in workspace URL: `https://3.basecamp.com/6199215/projects`
   - User indicated the active Chrome profile is likely `Default`
   - The local Chrome cookies database at `Default\\Network\\Cookies` could not be copied because it was locked by the running browser process
+  - After Chrome was closed, the cookies database could be copied by byte stream and retained its original size
+  - Even with the copied database present, a temporary Chrome profile hit local decryption / profile-context issues when trying to use the authenticated session
+  - A direct launch attempt against the original profile did not expose a usable local remote-debugging endpoint
 - Screenshots / recordings: None yet.
 - Notes:
   - Verified the HackerOne program Overview before testing and extracted the focus areas from the rendered page.
@@ -148,6 +154,7 @@
   - Verified that both the signup and login pages are normal HTML form flows rather than marketing-only redirects.
   - Verified that the signup flow includes hCaptcha, so unattended account creation is not currently practical from this environment.
   - A later attempt to reuse the user's live logged-in Chrome session also hit a local operational blocker: the active cookies database was locked while Chrome was running.
+  - Even after Chrome was fully closed and the session database was copied successfully, the current tooling still could not turn that login state into a stable automated analysis session.
   - Public pages reviewed in this round did not expose an obvious unauthenticated vulnerability.
   - The support page has public form inputs, but there is not enough evidence from passive review alone to claim reflected XSS or another finding.
   - The public support form posts to `dash.37signals.com/support/tickets`, but no form submission or tampering was performed in this round.
@@ -169,12 +176,15 @@
   - Could not reach authenticated workflows in this round, so IDOR and horizontal access-control testing could not start yet.
   - Could not safely complete real account creation from this environment because the signup flow appears to require manual hCaptcha completion.
   - Could not non-disruptively clone the user's already logged-in Chrome session while Chrome was still running and holding a lock on the cookies database.
+  - Could not convert the copied authenticated Chrome data into a usable automated browser session after Chrome was closed.
+  - Could not obtain a working remote-debugging session against the original profile either.
 - Why no finding was confirmed yet:
   - No obvious unauthenticated issue was observed on the reviewed public pages.
   - The highest-value bug classes for this target likely require authenticated workflows.
   - Although the pre-authentication forms are confirmed, actual account creation and role setup have not started yet.
   - The current environment is suitable for rendered-page analysis, but not for unattended completion of a captcha-gated signup workflow.
   - Even after the user manually created an account, the current tooling still needs a non-locked authenticated browser state to continue safely.
+  - The remaining blocker is no longer account availability, but stable technical reuse of the authenticated browser state from this environment.
 
 ## 7. Candidate Finding Details
 - Vulnerability title: None yet.
@@ -211,6 +221,7 @@
   - Create test accounts only if the program rules allow the selected workflow and a human can complete any required captcha / email verification steps.
   - Once accounts exist, move to authenticated tests for IDOR, horizontal access control, and role-boundary checks.
   - If the team wants Codex to continue inside the live Basecamp account, temporarily close Chrome so the logged-in session can be copied into a temporary analysis profile, or provide another low-friction authenticated path.
+  - Revisit authenticated Basecamp testing only if a more reliable browser-control path becomes available than the current profile-copying approach.
 - Questions for teammates:
   - Does the team want Basecamp as the first real target, or should we shortlist 2-3 more HackerOne programs first?
 - Whether to keep testing this target: Yes, but the next useful step is authenticated testing rather than more passive browsing.
