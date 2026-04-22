@@ -5,7 +5,11 @@
 - Platform:
 - Program:
 - Program URL:
+- Program overview section reviewed:
+- Key overview excerpt:
 - Scope proof:
+- Scope page URL:
+- Official website URL:
 - Target / asset tested:
 - Tester(s):
 

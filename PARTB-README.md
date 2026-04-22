@@ -17,6 +17,9 @@ Recommended workflow:
 
 Minimum information to record for each tested target:
 - Platform and program name
+- HackerOne program URL
+- Official website URL
+- Proof that the program overview/rules were read before testing
 - Scope proof
 - Exact target URL or asset tested
 - Date and team member(s)
