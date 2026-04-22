@@ -5,7 +5,7 @@ Use this file to avoid duplicate testing and to summarize progress across all al
 | Date | Platform | Program | Target / Asset | Tester(s) | Test Types | Status | Candidate Finding | Folder |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-04-22 | TBD | TBD | TBD | TBD | TBD | Not started | None | `partb/targets/` |
-| 2026-04-22 | HackerOne | Basecamp | `basecamp.com` web app and in-scope assets from the program security page | YX / Codex | Target selection, scope review, planning for IDOR/XSS | In progress | None | `partb/targets/2026-04-22-hackerone-basecamp/` |
+| 2026-04-22 | HackerOne | Basecamp | `basecamp.com` web app and in-scope assets from the program security page | YX / Codex | Scope review, public-surface review, signup/login flow analysis, planning for authenticated IDOR | In progress | None | `partb/targets/2026-04-22-hackerone-basecamp/` |
 
 Status suggestions:
 - `Not started`

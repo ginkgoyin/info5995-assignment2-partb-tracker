@@ -69,6 +69,7 @@
   - The official `try-basecamp` page publicly exposes normal account-creation links.
   - Visible plan-based signup links include `free_v1`, `per_user_v3`, and `pro_unlimited_yearly_v1`.
   - This supports the working assumption that authenticated testing is operationally feasible, subject to the program rules.
+  - The rendered signup page loads `https://hcaptcha.com/1/api.js?recaptchacompat=off`, so manual human interaction is likely required for real account creation.
 
 ## 4. Test Steps
 1. Confirmed that the teacher-approved starting platform is HackerOne.
@@ -102,6 +103,7 @@
 14. Confirmed from the rendered scope page that `3.basecamp.com` and `launchpad.37signals.com` are explicitly listed as eligible in-scope assets.
 15. Fetched the public Basecamp login page source and confirmed that it contains a local `/session` login form, CSRF tokens, and a Google sign-in flow.
 16. Fetched the public Basecamp free-signup page source and confirmed that it contains a local `/signup/account` account-creation form with `full_name`, `email_address`, `company_name`, terms acceptance, and password setup.
+17. Confirmed from the rendered signup page that account creation depends on a page that loads hCaptcha, which means we do not currently have a safe unattended path to create test accounts from this environment.
 
 ## 5. Evidence
 - Important URLs:
@@ -130,12 +132,14 @@
   - Signup page form action: `/signup/account`
   - Signup page validation endpoints referenced in DOM: `/signup/lookup` and `/signup/validation.json`
   - Signup page requires terms acceptance and indicates a minimum password length of `12` characters
+  - Signup page loads the hCaptcha API script, indicating an anti-automation control on the account-creation flow
 - Screenshots / recordings: None yet.
 - Notes:
   - Verified the HackerOne program Overview before testing and extracted the focus areas from the rendered page.
   - Verified the HackerOne scope page before planning authenticated testing.
   - Verified that both the public signup flow target (`3.basecamp.com`) and login flow target (`launchpad.37signals.com`) appear in the rendered in-scope list.
   - Verified that both the signup and login pages are normal HTML form flows rather than marketing-only redirects.
+  - Verified that the signup flow includes hCaptcha, so unattended account creation is not currently practical from this environment.
   - Public pages reviewed in this round did not expose an obvious unauthenticated vulnerability.
   - The support page has public form inputs, but there is not enough evidence from passive review alone to claim reflected XSS or another finding.
   - The public support form posts to `dash.37signals.com/support/tickets`, but no form submission or tampering was performed in this round.
@@ -152,12 +156,15 @@
   - Confirmed that authenticated testing looks operationally feasible because public account-creation links are exposed on the official site.
   - Confirmed that the likely authenticated entry points we care about are represented in the rendered in-scope asset list.
   - Confirmed that the login and signup entry points expose concrete application form flows that can support later account-based testing.
+  - Confirmed an important operational constraint early: the visible signup flow uses hCaptcha, so account creation likely needs manual human completion.
 - What failed:
   - Could not reach authenticated workflows in this round, so IDOR and horizontal access-control testing could not start yet.
+  - Could not safely complete real account creation from this environment because the signup flow appears to require manual hCaptcha completion.
 - Why no finding was confirmed yet:
   - No obvious unauthenticated issue was observed on the reviewed public pages.
   - The highest-value bug classes for this target likely require authenticated workflows.
   - Although the pre-authentication forms are confirmed, actual account creation and role setup have not started yet.
+  - The current environment is suitable for rendered-page analysis, but not for unattended completion of a captcha-gated signup workflow.
 
 ## 7. Candidate Finding Details
 - Vulnerability title: None yet.
@@ -191,8 +198,8 @@
 
 ## 10. Next Actions
 - Follow-up validation needed:
-  - Create test accounts only if the program rules allow the selected workflow.
-  - If account creation is allowed, move to authenticated tests for IDOR, horizontal access control, and input handling.
+  - Create test accounts only if the program rules allow the selected workflow and a human can complete any required captcha / email verification steps.
+  - Once accounts exist, move to authenticated tests for IDOR, horizontal access control, and role-boundary checks.
 - Questions for teammates:
   - Does the team want Basecamp as the first real target, or should we shortlist 2-3 more HackerOne programs first?
 - Whether to keep testing this target: Yes, but the next useful step is authenticated testing rather than more passive browsing.
