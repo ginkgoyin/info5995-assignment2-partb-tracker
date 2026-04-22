@@ -37,8 +37,19 @@
   - Public app availability pages
 - Vulnerability classes attempted:
   - Initial public-surface access control review
+  - Public authentication / authorization flow review
   - Initial reflected XSS surface review
   - Initial input-point discovery
+  - Public misconfiguration / unsafe exposure review
+  - Initial Basecamp-specific customized review
+- Baseline checklist status:
+  - 1. IDOR / horizontal access control: Not started in authenticated flows. Public unauthenticated review only.
+  - 2. Authentication / authorization flow mistakes: Initial public-flow review completed.
+  - 3. Input handling issues: Initial public input-point discovery completed.
+  - 4. Misconfiguration / unsafe exposure: Initial public-surface review completed.
+- Customized testing ideas:
+  - Review whether Basecamp public/help/support pages expose product-specific links or workflow state that could lead to account or project leakage.
+  - Review whether support and trial flows reveal environment details, unsafe redirects, or product-specific trust assumptions.
 - Tools used: Browser research, official program discovery pages, public page inspection, local tracker.
 - AI assistance used: Yes.
 
@@ -56,7 +67,19 @@
    - `https://basecamp.com/apps`
 6. Checked whether these pages exposed obvious query-parameter flows, object identifiers, unauthenticated sensitive content, or obvious reflected-input behavior from public GET endpoints.
 7. Identified that the support page contains public input fields, but no submission testing was performed in this round.
-8. Stopped after passive public-page review because authenticated flows and exact HackerOne scope details still need stronger confirmation before deeper testing.
+8. Reviewed public authentication and entry flows:
+   - `https://launchpad.37signals.com/signin`
+   - public sign-up links from `try-basecamp`
+   - public account/help references to `3.basecamp-help.com`, `2.basecamp-help.com`, and `classic.basecamp-help.com`
+9. Reviewed the support form structure on `https://basecamp.com/support`:
+   - form action points to `https://dash.37signals.com/support/tickets`
+   - includes hidden fields and hCaptcha
+   - no obvious reflected-input behavior could be confirmed without submission
+10. Reviewed public product-specific clues on `try-basecamp`, including:
+   - guest/client invitation messaging
+   - Admin Pro Pack and account-control marketing text
+   - help links for timesheet/admin features
+11. Stopped after passive public-page review because authenticated flows still appear to be the more promising path for access-control issues, and no public-page issue was strong enough to support a finding.
 
 ## 5. Evidence
 - Important URLs:
@@ -71,12 +94,18 @@
   - `https://basecamp.com/help`
   - `https://basecamp.com/support/`
   - `https://basecamp.com/apps`
+  - `https://launchpad.37signals.com/signin`
+  - `https://3.basecamp-help.com`
+  - `https://2.basecamp-help.com`
+  - `https://classic.basecamp-help.com`
 - Important requests/responses: None yet.
 - Screenshots / recordings: None yet.
 - Notes:
   - Verified the HackerOne program Overview before testing and extracted the focus areas from the rendered page.
   - Public pages reviewed in this round did not expose an obvious unauthenticated vulnerability.
   - The support page has public form inputs, but there is not enough evidence from passive review alone to claim reflected XSS or another finding.
+  - The public support form posts to `dash.37signals.com/support/tickets`, but no form submission or tampering was performed in this round.
+  - Public product pages expose expected product/help links and pricing flows, but no unsafe redirect, token leak, or obvious authorization flaw was identified from passive review.
   - Before deeper testing, the team should verify exact in-scope assets and any program-specific restrictions.
 
 ## 6. Outcome
@@ -85,6 +114,7 @@
   - Identified a concrete program to start with instead of treating the entire HackerOne platform as one target.
   - Chose a web-first product with visible free sign-up, which is suitable for later IDOR and access-control testing.
   - Completed an initial passive review of Basecamp public pages without creating risk for the target.
+  - Completed baseline categories 2-4 at the public-surface level and completed a first product-specific customized review.
 - What failed:
   - Could not directly extract the full dynamic Security Page content from HackerOne in this environment.
   - Could not reach authenticated workflows in this round, so IDOR and horizontal access-control testing could not start yet.

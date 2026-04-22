@@ -15,11 +15,21 @@ Recommended workflow:
 4. Store screenshots, request samples, and notes in the same target folder.
 5. Commit and push after meaningful updates.
 
+Standard testing order for each program:
+1. Read the HackerOne program page, overview, and scope before testing.
+2. Test `IDOR / horizontal access control`.
+3. Test `authentication / authorization flow mistakes`.
+4. Test `input handling issues`, prioritizing reflected XSS and then obvious stored XSS.
+5. Test `misconfiguration / unsafe exposure` with real security impact.
+6. Run `customized testing` based on the product's specific workflows and trust boundaries.
+
 Minimum information to record for each tested target:
 - Platform and program name
 - HackerOne program URL
 - Official website URL
 - Proof that the program overview/rules were read before testing
+- Which baseline categories `1-4` were tested
+- What customized testing ideas were attempted
 - Scope proof
 - Exact target URL or asset tested
 - Date and team member(s)

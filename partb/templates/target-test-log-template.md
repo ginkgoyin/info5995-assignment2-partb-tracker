@@ -22,6 +22,12 @@
 ## 3. Testing Summary
 - Main functionality tested:
 - Vulnerability classes attempted:
+- Baseline checklist status:
+  - 1. IDOR / horizontal access control:
+  - 2. Authentication / authorization flow mistakes:
+  - 3. Input handling issues:
+  - 4. Misconfiguration / unsafe exposure:
+- Customized testing ideas:
 - Tools used:
 - AI assistance used:
 
