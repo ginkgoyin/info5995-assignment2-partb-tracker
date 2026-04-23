@@ -40,7 +40,9 @@
   - Authenticated account settings page
   - Authenticated Builder Hub API-key page
   - Authenticated personal access tokens page
+  - Authenticated personal access token creation form
   - Authenticated OAuth integrations page
+  - Authenticated OAuth integration registration form
   - Public developer API reference page
 - Vulnerability classes attempted:
   - Program intake and scope lock
@@ -157,7 +159,22 @@
    - `Register an OAuth integration`
 28. Reviewed the OAuth page network activity and confirmed:
    - `getOauthApplicationsForDevelopersHub`
-29. Opened the public developer API reference and confirmed the visible existence of developer documentation for:
+29. Opened the personal access token creation form directly and confirmed it requires explicit user-provided input before creation:
+   - token `Name`
+   - `Add a scope`
+   - explicit `Access`
+   - disabled `Create token` button until required input is provided
+30. Confirmed the token creation page explicitly states:
+   - the token grants access only to selected workspaces and bases
+   - the token also grants access to some non-workspace/base endpoints
+   - the user can only grant access to bases and workspaces they already have access to
+31. Opened the OAuth integration registration form directly and confirmed it requires explicit user-provided registration fields:
+   - integration `Name`
+   - `OAuth redirect URLs`
+   - `Add redirect URL`
+   - `Register integration`
+32. Confirmed the OAuth registration form does not pre-populate redirect URIs or silently register an integration in its initial state.
+33. Opened the public developer API reference and confirmed the visible existence of developer documentation for:
    - authentication
    - scopes
    - OAuth reference
@@ -165,7 +182,7 @@
    - records
    - collaborators / invites / shares
    - workspaces / users / audit logs
-30. Stopped after approximately five meaningful authenticated checks because no supportable access-control bypass, exposed secret, token leak, or account-boundary failure was confirmed in this round.
+34. Stopped after the deeper authenticated follow-up because no supportable access-control bypass, exposed secret, token leak, redirect weakness, or account-boundary failure was confirmed without actually creating a token or registering an OAuth integration.
 
 ## 4A. Attack Surface Map
 - Public surfaces discovered:
@@ -201,7 +218,9 @@
   - `https://community.airtable.com/`
   - `https://airtable.com/create/apikey`
   - `https://airtable.com/create/tokens`
+  - `https://airtable.com/create/tokens/new`
   - `https://airtable.com/create/oauth`
+  - `https://airtable.com/create/oauth/new`
   - `https://airtable.com/create/secrets`
   - `https://airtable.com/create/extensions`
 
@@ -214,7 +233,9 @@
   - `https://airtable.com/account`
   - `https://airtable.com/create/apikey`
   - `https://airtable.com/create/tokens`
+  - `https://airtable.com/create/tokens/new`
   - `https://airtable.com/create/oauth`
+  - `https://airtable.com/create/oauth/new`
   - `https://airtable.com/developers/web/api/introduction`
 - Important XHR / fetch endpoints:
   - `https://airtable.com/internal/stats-batch`
@@ -245,6 +266,7 @@
   - Both login and signup flows are substantial Airtable-hosted frontend applications, not trivial redirect stubs.
   - `PerimeterX` is present in both login and signup flows, implying anti-automation or bot-detection logic.
   - Authenticated account and builder pages expose a stable internal object model around user and workspace IDs, which is useful for later access-control testing.
+  - The deeper builder forms did not expose unsafe defaults in their initial state; token creation and OAuth registration both required explicit user-provided inputs.
 
 ## 5. Evidence
 - Important URLs:
@@ -256,7 +278,9 @@
   - `https://airtable.com/account`
   - `https://airtable.com/create/apikey`
   - `https://airtable.com/create/tokens`
+  - `https://airtable.com/create/tokens/new`
   - `https://airtable.com/create/oauth`
+  - `https://airtable.com/create/oauth/new`
   - `https://airtable.com/developers`
   - `https://airtable.com/developers/web/api/introduction`
 - Important requests/responses:
@@ -272,6 +296,8 @@
   - Token page called `getPersonalAccessTokensForDevelopersHub`
   - OAuth page called `getOauthApplicationsForDevelopersHub`
   - Authenticated silent-auth flow exposed OIDC `code_challenge`, `nonce`, and `state` parameters in the browser requests
+  - Token creation form required explicit scopes and access selection before creation
+  - OAuth integration registration form required explicit redirect URLs before registration
 - Screenshots / recordings: None yet.
 - Notes:
   - This is a valid next-step target under the current workflow.
@@ -287,12 +313,14 @@
   - Confirmed authenticated access to Airtable home, account settings, and Builder Hub.
   - Confirmed stable user and workspace identifiers in authenticated requests and account settings.
   - Confirmed developer/token/OAuth management surfaces exist and are reachable from the logged-in account.
+  - Confirmed that the deeper token and OAuth creation forms do not expose secrets or silently pre-authorized objects in their initial state.
 - What failed:
   - No unauthenticated object exposure, redirect issue, or obvious reflected-input issue was confirmed in this round.
   - No exposed secret, reusable token, cross-account object access, or privilege-boundary flaw was confirmed in the authenticated round.
 - Why no finding was confirmed yet:
   - The higher-value Airtable attack surface likely sits behind authenticated workspace/base/account contexts.
   - The current account is still in a very early state with only one visible workspace and no richer collaboration/base-sharing objects to compare.
+  - The deeper token and OAuth checks reached form-validation state, but not creation state, because creating credentials or integrations would materially alter the account.
 - Whether this target should be revisited only with a richer account state or second account:
   - Very likely yes if the team wants to push deeper into workspace sharing, invites, and API-boundary testing later.
 
@@ -321,10 +349,12 @@
   - Airtable is being assessed through the teacher-approved HackerOne platform.
   - The direct HackerOne Airtable program page rendered correctly and exposed policy/scope structure.
 - Safety constraints followed:
-  - Only public HackerOne and public Airtable pages were reviewed in this round.
-  - No login attempt or account submission was performed by the agent.
+  - Public HackerOne pages and authenticated Airtable pages already opened by the user were reviewed.
+  - No token was created and no OAuth integration was registered.
 - Actions avoided:
-  - No brute force, no automated account creation, no authenticated testing yet.
+  - No brute force.
+  - No token creation.
+  - No OAuth integration registration.
 
 ## 10. Next Actions
 - Follow-up validation needed:
