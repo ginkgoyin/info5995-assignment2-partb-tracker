@@ -27,17 +27,18 @@
   - The Semrush homepage exposes `Sign Up` and `Try for free` entry points.
   - The pricing page advertises `Try Semrush free for seven days. Cancel anytime.`
   - The public signup page is `https://www.semrush.com/signup/?src=header`.
-  - The public login page is `https://www.semrush.com/login/`.
-  - The fetched signup page source exposes a SPA auth shell, a CSRF token, and auth state metadata, but no obvious captcha requirement was observed in the fetched HTML.
-  - The fetched login page source exposes a similar SPA auth shell, a CSRF token, and auth state metadata.
+  - The public login page is `https://www.semrush.com/login/?src=header`.
+  - Raw HTML review showed SPA auth scaffolding, CSRF state, and auth metadata on both signup and login pages.
+  - Rendered-page review through Chrome DevTools showed visible `reCAPTCHA` on both the login and signup pages.
 - Role setup: Not started.
 
 ## 3. Testing Summary
 - Main functionality tested:
   - Semrush public homepage
   - Public pricing / trial page
-  - Public signup page source
-  - Public login page source
+  - Public login page (rendered UI)
+  - Public signup page (rendered UI)
+  - Semrush App Center public pages
 - Vulnerability classes attempted:
   - Initial public-surface access control review
   - Public authentication / authorization flow review
@@ -63,11 +64,11 @@
 5. Reviewed the official HackerOne Bug Bounty Programs page snippet for the Semrush program and extracted the policy-relevant rule to test only with owned accounts.
 6. Fetched the raw HTML of the direct HackerOne Semrush scope page URL and confirmed that the scope page itself is reachable, even though its asset details are rendered client-side.
 7. Reviewed the Semrush homepage `https://www.semrush.com/` and confirmed public `Log In`, `Sign Up`, and `Try for free` entry points.
-8. Reviewed the Semrush pricing page and confirmed the public seven-day trial messaging.
-9. Fetched the Semrush public signup page source and confirmed that it loads an SPA auth shell with CSRF state and signup-related auth metadata.
-10. Fetched the Semrush public login page source and confirmed that it loads an SPA auth shell with CSRF state and login-related auth metadata.
-11. Reviewed the fetched public auth-page source for obvious blockers or constraints, including visible captcha references, and did not observe an obvious captcha script in the fetched HTML.
-12. Stopped after the first public/auth-entry review because higher-value bug classes for this target still appear to depend on real account creation and authenticated workflows.
+8. Reviewed the Semrush pricing page and confirmed public seven-day trial messaging and public subscription links with `redirect_to` parameters such as `/analytics/overview/`.
+9. Reviewed the rendered Semrush public login page and confirmed visible email/password auth UI, Google sign-in, SAML login, and a rendered `reCAPTCHA` widget.
+10. Reviewed the rendered Semrush public signup page and confirmed visible email sign-up UI, Google sign-in, terms links, and a rendered `reCAPTCHA` widget.
+11. Reviewed the Semrush App Center public pages and confirmed that public app listings, partner/developer links, and category links are exposed without immediate authentication.
+12. Stopped after the first public/auth-entry round because no directly supportable unauthenticated issue was observed and higher-value bug classes now appear to depend on a real owned account.
 
 ## 5. Evidence
 - Important URLs:
@@ -78,7 +79,8 @@
   - `https://www.semrush.com/pricing/`
   - `https://www.semrush.com/pricing/seo/`
   - `https://www.semrush.com/signup/?src=header`
-  - `https://www.semrush.com/login/`
+  - `https://www.semrush.com/login/?src=header`
+  - `https://www.semrush.com/apps/`
 - Important requests/responses:
   - Public signup page source includes:
     - canonical `https://www.semrush.com/signup/`
@@ -96,11 +98,13 @@
   - The raw HTML of the direct HackerOne scope page was fetched successfully, but the asset details themselves still require client-side rendering.
   - The official HackerOne Bug Bounty Programs page was still useful as the direct source for the explicit owned-account testing rule.
   - The official Semrush public pages clearly expose account entry points and a seven-day trial path.
+  - The rendered Semrush login and signup pages both visibly include `reCAPTCHA`, correcting the earlier raw-HTML-only assumption that captcha might not be present.
+  - The pricing page exposes public plan and trial flows with `subscribe` URLs that include controlled `redirect_to` parameters, but no redirect issue was confirmed in this round.
+  - The App Center exposes a larger public product surface, including app detail pages and partner/developer entry points, but no obvious unauthenticated issue was confirmed in this round.
   - No obvious unauthenticated vulnerability was observed on the reviewed public pages.
-  - No obvious captcha blocker was visible in the fetched Semrush signup HTML, so authenticated testing may be easier to advance here than it was for Basecamp.
 
 ## 6. Outcome
-- Result: No finding
+- Result: No finding in the pre-login round
 - What worked:
   - Selected a second concrete HackerOne program and avoided retesting Basecamp.
   - Read the direct HackerOne Semrush program page through raw HTML instead of relying only on the general program listing.
@@ -108,10 +112,10 @@
   - Confirmed that Semrush exposes public signup and login entry points and a trial workflow.
   - Confirmed that the fetched signup and login pages expose concrete auth application scaffolding rather than only marketing redirects.
 - What failed:
-  - Could not begin IDOR or horizontal access-control testing because no test account has been created yet.
+  - Could not begin IDOR or horizontal access-control testing because no owned authenticated session has been created yet.
   - Could not confirm role structure or organization / workspace concepts from unauthenticated public review alone.
 - Why no finding was confirmed yet:
-  - The first round was limited to public pages and auth entry-point analysis.
+  - The first round was limited to public pages, pricing flows, auth entry-point analysis, and App Center browsing.
   - The most promising Semrush bug classes likely require authenticated workflows and at least one owned account.
 
 ## 7. Candidate Finding Details
@@ -148,11 +152,11 @@
 
 ## 10. Next Actions
 - Follow-up validation needed:
-  - Confirm whether the team wants to create a Semrush test account using an owned email, consistent with the HackerOne listing rule to use only owned accounts.
-  - If account creation succeeds, move into authenticated testing for IDOR, horizontal access control, and onboarding / trial-boundary checks.
+  - Open the Semrush login or signup page for the user and wait for them to complete owned-account registration/login.
+  - After login succeeds, move into authenticated testing for IDOR, horizontal access control, onboarding / trial-boundary checks, and account/workspace exposure review.
 - Questions for teammates:
-  - Does the team want Semrush to become the first target where we create a real test account, or should we still shortlist more programs first?
-- Whether to keep testing this target: Yes, because the auth flow appears more operationally feasible than Basecamp from the current environment.
+  - Which owned Semrush account should be used for the first authenticated round?
+- Whether to keep testing this target: Yes, because the public surface is broad enough to justify an authenticated follow-up round.
 
 ## 11. Files in This Folder
 - `target-test-log.md`
