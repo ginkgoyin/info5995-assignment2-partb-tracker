@@ -71,6 +71,20 @@
   - This supports the working assumption that authenticated testing is operationally feasible, subject to the program rules.
   - The rendered signup page loads `https://hcaptcha.com/1/api.js?recaptchacompat=off`, so manual human interaction is likely required for real account creation.
 
+## 3B. Authenticated Browser Testing Update
+- Authenticated browser testing via Chrome MCP: Yes
+- Logged-in workspace used: `https://3.basecamp.com/6199215/`
+- Authenticated observations:
+  - The Chrome MCP session successfully opened the user's already logged-in Basecamp workspace without reusing copied cookies.
+  - The authenticated workspace exposed the main account navigation, project list, `Adminland`, and invitation flows.
+  - The current user appears to hold both `administrator` and `account owner` privileges in this Basecamp account.
+- Authenticated high-value checks completed:
+  - Invite-role boundary review
+  - Adminland capability review
+  - `Access any project` privilege review
+  - `Manage people` review
+  - Direct-object unauthenticated access check from an isolated browser context
+
 ## 4. Test Steps
 1. Confirmed that the teacher-approved starting platform is HackerOne.
 2. Confirmed that HackerOne is a directory of many programs, and that actual scope is defined per individual program Security Page.
@@ -110,6 +124,22 @@
 21. After the user fully closed Chrome, successfully copied the original `Default\\Network\\Cookies` database bytes and related local state into a temporary workspace profile.
 22. Attempted to access the logged-in Basecamp workspace through a temporary Chrome profile, but the copied session could not be decrypted reliably in the new profile context.
 23. Attempted a second path by launching Chrome directly against the original `Default` profile with a remote debugging port and the logged-in Basecamp URL, but no usable debugging endpoint became available.
+24. After Chrome MCP became available, directly opened the already logged-in Basecamp workspace in the browser and confirmed that the authenticated session was usable.
+25. Reviewed the authenticated home page and confirmed the presence of high-value navigation and account-control areas including `Adminland`, project listings, invitation flow, and project-level tools.
+26. Opened the invitation flow at `https://3.basecamp.com/6199215/account/enrollments/new` and reviewed the visible role boundaries for internal staff, outside collaborators, and clients.
+27. Confirmed that Basecamp explicitly describes stronger privileges for internal staff and reduced privileges for collaborators and clients, including project-creation, invitation, and admin restrictions.
+28. Opened `Adminland` at `https://3.basecamp.com/6199215/account` and confirmed that the current account can access high-risk administrative functions such as `Manage people`, `Add/remove administrators`, `Add/remove account owners`, `Access any project`, and `Export data from this account`.
+29. Opened the `Access any project` page at `https://3.basecamp.com/6199215/account/accesses/overrides` and confirmed that the account-owner role is allowed to override project access, but the current account already has access to all projects.
+30. Opened `Manage people` at `https://3.basecamp.com/6199215/account/people` and confirmed that the admin view exposes at least one account member's email address and account membership details.
+31. Opened a sample project at `https://3.basecamp.com/6199215/projects/46997852` and reviewed available project object types including message board, to-dos, chat, schedule, files, and project-people management.
+32. Opened the project people-management page at `https://3.basecamp.com/6199215/projects/46997852/people/users/edit`, but this specific sample project explicitly states there is nothing to configure there because it is only sample content.
+33. Performed an isolated-browser direct-object access test by opening a message-board object URL without authenticated state:
+   - `https://3.basecamp.com/6199215/buckets/46997852/message_boards/9815453174`
+34. Confirmed that the isolated-context request redirected to the Basecamp login page instead of exposing the protected message-board content.
+35. Performed a second isolated-browser direct-object access test against a file upload object URL without authenticated state:
+   - `https://3.basecamp.com/6199215/buckets/46997852/uploads/9815453936`
+36. Confirmed that the isolated-context request again redirected to the Basecamp login page instead of exposing the protected file object.
+37. Stopped after roughly five meaningful authenticated checks because this round did not produce a confirmed vulnerability and the agreed workflow is to continue with another program after that point.
 
 ## 5. Evidence
 - Important URLs:
@@ -146,6 +176,15 @@
   - After Chrome was closed, the cookies database could be copied by byte stream and retained its original size
   - Even with the copied database present, a temporary Chrome profile hit local decryption / profile-context issues when trying to use the authenticated session
   - A direct launch attempt against the original profile did not expose a usable local remote-debugging endpoint
+- Authenticated browser observations:
+  - Authenticated homepage used: `https://3.basecamp.com/6199215/`
+  - Invitation-flow page used: `https://3.basecamp.com/6199215/account/enrollments/new`
+  - Adminland page used: `https://3.basecamp.com/6199215/account`
+  - Project-access override page used: `https://3.basecamp.com/6199215/account/accesses/overrides`
+  - Manage-people page used: `https://3.basecamp.com/6199215/account/people`
+  - Sample project used: `https://3.basecamp.com/6199215/projects/46997852`
+  - Sample project people-management page used: `https://3.basecamp.com/6199215/projects/46997852/people/users/edit`
+  - Anonymous direct-object checks were performed in an isolated browser context and both protected-object URLs redirected to the Basecamp login page
 - Screenshots / recordings: None yet.
 - Notes:
   - Verified the HackerOne program Overview before testing and extracted the focus areas from the rendered page.
@@ -155,6 +194,10 @@
   - Verified that the signup flow includes hCaptcha, so unattended account creation is not currently practical from this environment.
   - A later attempt to reuse the user's live logged-in Chrome session also hit a local operational blocker: the active cookies database was locked while Chrome was running.
   - Even after Chrome was fully closed and the session database was copied successfully, the current tooling still could not turn that login state into a stable automated analysis session.
+  - Chrome MCP later provided a better path: the authenticated browser session could be used directly without trying to clone cookies.
+  - The authenticated account clearly has powerful owner/admin permissions, which made this round useful for mapping high-impact surfaces even though it did not produce a vulnerability.
+  - Basecamp's own role descriptions explicitly distinguish internal staff, collaborators, and clients, which remains a promising direction for future multi-account testing.
+  - Two direct-object access checks from an isolated unauthenticated browser context both redirected to the login page rather than exposing protected content.
   - Public pages reviewed in this round did not expose an obvious unauthenticated vulnerability.
   - The support page has public form inputs, but there is not enough evidence from passive review alone to claim reflected XSS or another finding.
   - The public support form posts to `dash.37signals.com/support/tickets`, but no form submission or tampering was performed in this round.
@@ -172,19 +215,25 @@
   - Confirmed that the likely authenticated entry points we care about are represented in the rendered in-scope asset list.
   - Confirmed that the login and signup entry points expose concrete application form flows that can support later account-based testing.
   - Confirmed an important operational constraint early: the visible signup flow uses hCaptcha, so account creation likely needs manual human completion.
+  - Confirmed that Chrome MCP can directly operate the user's authenticated browser session inside Basecamp.
+  - Completed roughly five meaningful authenticated checks covering invitation roles, admin surfaces, project-access override behavior, people management, and unauthenticated direct-object access.
+  - Confirmed that protected direct object URLs tested from an isolated browser context redirected to login rather than leaking content anonymously.
 - What failed:
   - Could not reach authenticated workflows in this round, so IDOR and horizontal access-control testing could not start yet.
   - Could not safely complete real account creation from this environment because the signup flow appears to require manual hCaptcha completion.
   - Could not non-disruptively clone the user's already logged-in Chrome session while Chrome was still running and holding a lock on the cookies database.
   - Could not convert the copied authenticated Chrome data into a usable automated browser session after Chrome was closed.
   - Could not obtain a working remote-debugging session against the original profile either.
+  - Could not validate multi-role or multi-account access-control scenarios because only one authenticated account was available in this round.
+  - Could not turn the sample project's people-management page into a role-boundary test because the sample content explicitly disables normal project-person management there.
 - Why no finding was confirmed yet:
   - No obvious unauthenticated issue was observed on the reviewed public pages.
   - The highest-value bug classes for this target likely require authenticated workflows.
   - Although the pre-authentication forms are confirmed, actual account creation and role setup have not started yet.
   - The current environment is suitable for rendered-page analysis, but not for unattended completion of a captcha-gated signup workflow.
   - Even after the user manually created an account, the current tooling still needs a non-locked authenticated browser state to continue safely.
-  - The remaining blocker is no longer account availability, but stable technical reuse of the authenticated browser state from this environment.
+  - Chrome MCP removed the earlier browser-state blocker, but this round still did not reveal a concrete access-control bypass, privacy leak, or direct-object exposure.
+  - The remaining high-value Basecamp hypotheses now depend more on multi-account or multi-role testing than on simple single-user navigation.
 
 ## 7. Candidate Finding Details
 - Vulnerability title: None yet.
@@ -222,9 +271,10 @@
   - Once accounts exist, move to authenticated tests for IDOR, horizontal access control, and role-boundary checks.
   - If the team wants Codex to continue inside the live Basecamp account, temporarily close Chrome so the logged-in session can be copied into a temporary analysis profile, or provide another low-friction authenticated path.
   - Revisit authenticated Basecamp testing only if a more reliable browser-control path becomes available than the current profile-copying approach.
+  - If the team wants to continue Basecamp later, the highest-value next step is multi-account testing across internal staff, collaborator, and client roles.
 - Questions for teammates:
   - Does the team want Basecamp as the first real target, or should we shortlist 2-3 more HackerOne programs first?
-- Whether to keep testing this target: Yes, but the next useful step is authenticated testing rather than more passive browsing.
+- Whether to keep testing this target: Later, but only if the team is ready to support multi-role authenticated testing. This single-account round did not produce a finding.
 
 ## 11. Files in This Folder
 - `target-test-log.md`
