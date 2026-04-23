@@ -184,6 +184,17 @@
    - workspaces / users / audit logs
 34. Stopped after the deeper authenticated follow-up because no supportable access-control bypass, exposed secret, token leak, redirect weakness, or account-boundary failure was confirmed without actually creating a token or registering an OAuth integration.
 
+### Later deeper validation (concise)
+- Tried abnormal OAuth registration input on `https://airtable.com/create/oauth/new`
+  - Input used: `javascript:alert(1)` as the redirect URL
+  - Result: server rejected it with HTTP `422`
+  - Server message: `Invalid redirect URL: must use https; http is allowed for localhost only`
+- Confirmed the rejection came from the Airtable backend endpoint:
+  - `POST /v0.3/user/usrKlp7S1Dg3HN8Eq/createOauthApplication`
+- Re-checked authenticated home-session behavior after reload
+  - Observed a repeated `silentAuth` path
+  - Did not observe an obvious reusable or leaked `state/nonce/code_challenge` issue in this same-session reload check
+
 ## 4A. Attack Surface Map
 - Public surfaces discovered:
   - `https://www.airtable.com/`
@@ -302,6 +313,7 @@
 - Notes:
   - This is a valid next-step target under the current workflow.
   - The current state is ideal for handing off to user registration/login before deeper authenticated testing.
+  - Later testing moved beyond UI observation and included an actual malformed OAuth redirect-URL submission.
 
 ## 6. Outcome
 - Result: No finding yet after pre-auth round
@@ -314,9 +326,11 @@
   - Confirmed stable user and workspace identifiers in authenticated requests and account settings.
   - Confirmed developer/token/OAuth management surfaces exist and are reachable from the logged-in account.
   - Confirmed that the deeper token and OAuth creation forms do not expose secrets or silently pre-authorized objects in their initial state.
+  - Confirmed by direct submission that Airtable's OAuth registration endpoint rejects a clearly unsafe redirect URL scheme.
 - What failed:
   - No unauthenticated object exposure, redirect issue, or obvious reflected-input issue was confirmed in this round.
   - No exposed secret, reusable token, cross-account object access, or privilege-boundary flaw was confirmed in the authenticated round.
+  - Same-session reload did not reproduce a new full OIDC auth chain that exposed reusable `state/nonce/code_challenge` values for comparison.
 - Why no finding was confirmed yet:
   - The higher-value Airtable attack surface likely sits behind authenticated workspace/base/account contexts.
   - The current account is still in a very early state with only one visible workspace and no richer collaboration/base-sharing objects to compare.
