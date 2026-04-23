@@ -18,15 +18,17 @@
 - Account type(s) used:
 - Registration/login notes:
 - Role setup:
+- Whether a second account or second role may be needed:
 
 ## 3. Testing Summary
 - Main functionality tested:
 - Vulnerability classes attempted:
 - Baseline checklist status:
-  - 1. IDOR / horizontal access control:
-  - 2. Authentication / authorization flow mistakes:
-  - 3. Input handling issues:
-  - 4. Misconfiguration / unsafe exposure:
+  - 1. Access control / IDOR / object exposure:
+  - 2. Authentication / session / invite / reset / verification / OAuth flow flaws:
+  - 3. Token / nonce / randomness / binding quality:
+  - 4. Input handling / XSS / unsafe reflection:
+  - 5. Misconfiguration / unsafe exposure / business logic boundary:
 - Customized testing ideas:
 - Tools used:
 - AI assistance used:
@@ -35,6 +37,22 @@
 1.
 2.
 3.
+
+## 4A. Attack Surface Map
+- Public surfaces discovered:
+- Auth-related surfaces discovered:
+- Object-bearing surfaces discovered:
+- Billing / subscription / trial surfaces discovered:
+- Sharing / invitation / collaboration surfaces discovered:
+- App / developer / API / docs surfaces discovered:
+
+## 4B. DevTools Deep-Dive Notes
+- Key pages inspected with DevTools:
+- Important XHR / fetch endpoints:
+- Interesting object IDs / UUIDs / team or workspace markers:
+- Tokens / nonce / state / CSRF observations:
+- Hidden parameters / embedded state / frontend routes:
+- Bundle / source / feature-flag observations:
 
 ## 5. Evidence
 - Important URLs:
@@ -47,6 +65,7 @@
 - What worked:
 - What failed:
 - Why no finding was confirmed yet:
+- Whether this target should be revisited only with a richer account state or second account:
 
 ## 7. Candidate Finding Details
 - Vulnerability title:
@@ -74,6 +93,12 @@
 - Follow-up validation needed:
 - Questions for teammates:
 - Whether to keep testing this target:
+- Next recommended testing state:
+  - Continue pre-auth
+  - Request login / registration
+  - Continue post-auth
+  - Prepare second account / second role
+  - Move to next program
 
 ## 11. Files in This Folder
 - `target-test-log.md`
