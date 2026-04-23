@@ -21,8 +21,8 @@
 - Tester(s): YX / Codex
 
 ## 2. Target Access
-- Account required: Likely yes for higher-value authenticated testing.
-- Account type(s) used: None yet.
+- Account required: Yes for higher-value authenticated testing.
+- Account type(s) used: One owned Semrush account supplied by the user in Chrome.
 - Registration/login notes:
   - The Semrush homepage exposes `Sign Up` and `Try for free` entry points.
   - The pricing page advertises `Try Semrush free for seven days. Cancel anytime.`
@@ -30,7 +30,9 @@
   - The public login page is `https://www.semrush.com/login/?src=header`.
   - Raw HTML review showed SPA auth scaffolding, CSRF state, and auth metadata on both signup and login pages.
   - Rendered-page review through Chrome DevTools showed visible `reCAPTCHA` on both the login and signup pages.
-- Role setup: Not started.
+- Role setup:
+  - Single logged-in owned account only.
+  - No second account or alternate role was available in this round.
 
 ## 3. Testing Summary
 - Main functionality tested:
@@ -39,17 +41,24 @@
   - Public login page (rendered UI)
   - Public signup page (rendered UI)
   - Semrush App Center public pages
+  - Authenticated SEO toolkit landing page
+  - Authenticated `/home/` landing page
+  - Authenticated `My Reports`
+  - Authenticated `My Apps`
+  - Authenticated App Center store state
 - Vulnerability classes attempted:
   - Initial public-surface access control review
   - Public authentication / authorization flow review
   - Initial input handling surface review
   - Public misconfiguration / unsafe exposure review
   - Initial Semrush-specific customized review
+  - Initial authenticated session-state review
+  - Initial authenticated object / subscription-boundary review
 - Baseline checklist status:
-  - 1. IDOR / horizontal access control: Not started in authenticated flows.
-  - 2. Authentication / authorization flow mistakes: Initial public-flow review completed.
+  - 1. IDOR / horizontal access control: Partially explored in authenticated single-account surfaces; no second-account comparison yet.
+  - 2. Authentication / authorization flow mistakes: Initial public-flow and first authenticated session review completed.
   - 3. Input handling issues: Initial public input-surface review completed.
-  - 4. Misconfiguration / unsafe exposure: Initial public-surface review completed.
+  - 4. Misconfiguration / unsafe exposure: Initial public-surface and first authenticated exposure review completed.
 - Customized testing ideas:
   - Review whether trial activation, toolkit selection, and plan-specific onboarding expose role or tenant-boundary issues once test accounts exist.
   - Review whether account provisioning, trial state, and subscription-related endpoints leak plan or organization data between users.
@@ -68,7 +77,14 @@
 9. Reviewed the rendered Semrush public login page and confirmed visible email/password auth UI, Google sign-in, SAML login, and a rendered `reCAPTCHA` widget.
 10. Reviewed the rendered Semrush public signup page and confirmed visible email sign-up UI, Google sign-in, terms links, and a rendered `reCAPTCHA` widget.
 11. Reviewed the Semrush App Center public pages and confirmed that public app listings, partner/developer links, and category links are exposed without immediate authentication.
-12. Stopped after the first public/auth-entry round because no directly supportable unauthenticated issue was observed and higher-value bug classes now appear to depend on a real owned account.
+12. Logged in with one owned Semrush account after the user completed the browser auth flow.
+13. Reviewed the authenticated SEO toolkit landing page `https://www.semrush.com/seo/` and confirmed access to account-level navigation such as `Reports`, `App Center`, `My profile`, and `Create SEO project`.
+14. Reviewed the authenticated landing page `https://www.semrush.com/home/` and confirmed that it exposed a project-start flow but no existing tenant objects or cross-account data.
+15. Reviewed the authenticated reports area `https://www.semrush.com/my_reports` and confirmed that report-template flows are exposed through controlled URLs such as `/my_reports/constructor?...`, but no existing report objects from other users were exposed.
+16. Reviewed the authenticated apps management page `https://www.semrush.com/apps/my-apps/` and confirmed that the account currently has `No active apps yet`, with no visible leakage of another user's subscriptions or trials.
+17. Revisited the authenticated App Center store `https://www.semrush.com/apps/` and noted a UI inconsistency where top-level `Log In` and `Sign Up` labels remain visible even while the account can access `My Apps`; no actual authentication bypass or data exposure was confirmed from that inconsistency.
+18. Reviewed authenticated network-request shape on `My Reports` and observed telemetry containing identifiers such as a `uid` and `semrush_team` label, but no directly exploitable authenticated API object exposure was confirmed in this round.
+19. Stopped after this first authenticated round because the single-account surfaces did not produce a supportable finding and stronger access-control testing would likely require a second owned account or a more stateful project setup.
 
 ## 5. Evidence
 - Important URLs:
@@ -81,6 +97,10 @@
   - `https://www.semrush.com/signup/?src=header`
   - `https://www.semrush.com/login/?src=header`
   - `https://www.semrush.com/apps/`
+  - `https://www.semrush.com/seo/`
+  - `https://www.semrush.com/home/`
+  - `https://www.semrush.com/my_reports`
+  - `https://www.semrush.com/apps/my-apps/`
 - Important requests/responses:
   - Public signup page source includes:
     - canonical `https://www.semrush.com/signup/`
@@ -92,6 +112,12 @@
     - hidden `csrfmiddlewaretoken`
     - `window.__AUTH_STATE__`
     - `formAction` set to `/login` in embedded initial state
+  - Authenticated report/template links include controlled routes such as:
+    - `/my_reports/constructor?action=openPopup&templateName=tc_ga4_atomic_widgets&type=template`
+    - `/my_reports/constructor?accordionTab=integrations&action=openBlank&isPremium=false`
+  - Authenticated `My Apps` state exposed:
+    - `No active apps yet`
+    - `Manage your subscriptions and trials`
 - Screenshots / recordings: None yet.
 - Notes:
   - The raw HTML of the direct HackerOne program page was fetched successfully and provided the official program title and description metadata.
@@ -101,22 +127,26 @@
   - The rendered Semrush login and signup pages both visibly include `reCAPTCHA`, correcting the earlier raw-HTML-only assumption that captcha might not be present.
   - The pricing page exposes public plan and trial flows with `subscribe` URLs that include controlled `redirect_to` parameters, but no redirect issue was confirmed in this round.
   - The App Center exposes a larger public product surface, including app detail pages and partner/developer entry points, but no obvious unauthenticated issue was confirmed in this round.
+  - The authenticated account gained access to `SEO`, `Home`, `Reports`, `App Center`, and `My Apps`, but the tested surfaces did not expose another user's data or shared objects in this round.
+  - The authenticated App Center store still rendered top-level `Log In` / `Sign Up` labels while `My Apps` was accessible from the same session. This looked like a UI/session inconsistency, but no security impact was confirmed.
+  - The authenticated `My Reports` network traffic included telemetry identifiers and product/team labels, but no directly actionable cross-account object exposure was confirmed.
   - No obvious unauthenticated vulnerability was observed on the reviewed public pages.
 
 ## 6. Outcome
-- Result: No finding in the pre-login round
+- Result: No finding after pre-login and first authenticated round
 - What worked:
   - Selected a second concrete HackerOne program and avoided retesting Basecamp.
   - Read the direct HackerOne Semrush program page through raw HTML instead of relying only on the general program listing.
   - Confirmed that the official HackerOne listing for Semrush includes a directly relevant rule: use only your own account(s).
   - Confirmed that Semrush exposes public signup and login entry points and a trial workflow.
   - Confirmed that the fetched signup and login pages expose concrete auth application scaffolding rather than only marketing redirects.
+  - Confirmed that one owned account can access the SEO, Home, Reports, and App Center surfaces without obvious cross-account exposure in the tested paths.
 - What failed:
-  - Could not begin IDOR or horizontal access-control testing because no owned authenticated session has been created yet.
-  - Could not confirm role structure or organization / workspace concepts from unauthenticated public review alone.
+  - Could not perform true horizontal access-control testing because only one owned account was available.
+  - Could not confirm richer tenant, workspace, or shared-project behavior because the current account had no existing apps, reports, or collaborative objects.
 - Why no finding was confirmed yet:
-  - The first round was limited to public pages, pricing flows, auth entry-point analysis, and App Center browsing.
-  - The most promising Semrush bug classes likely require authenticated workflows and at least one owned account.
+  - The first authenticated round still covered mostly empty or starter-state account surfaces.
+  - The most promising Semrush bug classes likely require either more populated account objects or a second owned account for comparison.
 
 ## 7. Candidate Finding Details
 - Vulnerability title: None yet.
@@ -152,11 +182,11 @@
 
 ## 10. Next Actions
 - Follow-up validation needed:
-  - Open the Semrush login or signup page for the user and wait for them to complete owned-account registration/login.
-  - After login succeeds, move into authenticated testing for IDOR, horizontal access control, onboarding / trial-boundary checks, and account/workspace exposure review.
+  - If the team wants to continue later, prepare a second owned Semrush account or create richer in-account objects such as reports, projects, or app trials.
+  - Revisit account/workspace boundary testing once there are comparable objects or multi-account surfaces.
 - Questions for teammates:
-  - Which owned Semrush account should be used for the first authenticated round?
-- Whether to keep testing this target: Yes, because the public surface is broad enough to justify an authenticated follow-up round.
+  - Should Semrush be revisited only after a second account exists, or should the team move on now?
+- Whether to keep testing this target: Pause for now unless the team wants to invest in a richer multi-account setup.
 
 ## 11. Files in This Folder
 - `target-test-log.md`
