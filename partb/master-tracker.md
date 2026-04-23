@@ -11,6 +11,7 @@ Use this file to avoid duplicate testing and to summarize progress across all al
 | 2026-04-23 | HackerOne | Privy (Bounty) | `www.privy.io` public site and direct program page | YX / Codex | Program-page review, public-site review, low-friction auth-path screening | No finding | None | `partb/targets/2026-04-23-hackerone-privy/` |
 | 2026-04-23 | HackerOne | Quora | `www.quora.com` public homepage and direct program page | YX / Codex | Program-page review, homepage fetch behavior review, low-friction screening | No finding | None | `partb/targets/2026-04-23-hackerone-quora/` |
 | 2026-04-23 | HackerOne | Shopify | `www.shopify.com`, `apps.shopify.com`, `shopify.dev`, Shopify account-login, and authenticated Partners surfaces | YX / Codex | Program intake, pre-auth DevTools review, authenticated partner/dashboard/stores/team/settings testing | No finding | None | `partb/targets/2026-04-23-hackerone-shopify/` |
+| 2026-04-23 | HackerOne | Poe | Candidate HackerOne Poe URL and `poe.com` login surface | YX / Codex | Program URL validation, public login-surface review | Out of scope | None | `partb/targets/2026-04-23-hackerone-poe/` |
 
 Status suggestions:
 - `Not started`
