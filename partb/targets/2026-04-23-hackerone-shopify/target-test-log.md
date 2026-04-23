@@ -26,6 +26,8 @@
   - The `Start for free` call-to-action points to `admin.shopify.com`.
   - The public homepage also exposes clear links to `Customer Accounts`, `Shopify Admin`, `Shopify App Store`, and `shopify.dev`.
 - Role setup: Not started.
+- Whether a second account or second role may be needed:
+  - Likely yes for deeper merchant-to-merchant or collaborator-boundary testing later.
 
 ## 3. Testing Summary
 - Main functionality tested:
@@ -37,16 +39,20 @@
   - Shopify App Store homepage
   - Shopify App Store app-detail page
 - Vulnerability classes attempted:
-  - Initial public-surface review
-  - Initial auth-entry feasibility review
-  - Initial direct-object / parameter-flow review
-  - Initial misconfiguration / unsafe exposure review
-  - Initial Shopify-specific customized review
+  - Program intake and scope lock
+  - Attack-surface mapping
+  - Pre-auth UI review
+  - Pre-auth DevTools deep dive
+  - Access control / object exposure pre-check
+  - Auth / session / invite / reset / verification flow pre-check
+  - Token / redirect / parameter-shape pre-check
+  - Misconfiguration / unsafe exposure pre-check
 - Baseline checklist status:
-  - 1. IDOR / horizontal access control: Not started.
-  - 2. Authentication / authorization flow mistakes: Public auth-entry and redirect-flow review completed.
-  - 3. Input handling issues: Initial parameter-flow review completed on App Store surfaces.
-  - 4. Misconfiguration / unsafe exposure: Initial public-surface and entry-point review completed.
+  - 1. Access control / IDOR / object exposure: Pre-auth object and app-detail surface review completed; no direct unauthenticated exposure confirmed.
+  - 2. Authentication / session / invite / reset / verification / OAuth flow flaws: Public auth-entry and login-initiation review completed.
+  - 3. Token / nonce / randomness / binding quality: Initial `rid`, `verify`, `redirect_uri`, `return_to`, and signup parameter review completed.
+  - 4. Input handling / XSS / unsafe reflection: Initial parameter and reflected-route review completed on App Store surfaces.
+  - 5. Misconfiguration / unsafe exposure / business logic boundary: Initial public-surface and developer/app-store exposure review completed.
 - Customized testing ideas:
   - Review whether `admin.shopify.com`, customer-account surfaces, or storefront/admin boundaries expose lower-friction public flows later.
   - Review whether app-store, developer, or admin-linked sub-surfaces offer better starting points than the main marketing site.
@@ -69,7 +75,84 @@
 13. Opened a specific App Store listing page and reviewed its public parameterized URL structure and visible content:
    - `https://apps.shopify.com/affliate-by-secomapp?...`
 14. Confirmed that the app-detail page remains publicly viewable as expected, that login/install actions redirect into Shopify-controlled auth flows, and that no obvious open redirect, unauthenticated data leak, or abnormal parameter-driven behavior was observed in this round.
-15. Stopped after approximately five meaningful Shopify checks because this round did not produce a confirmed vulnerability and the agreed workflow is to continue with another program after that point.
+15. Re-opened Shopify using the enhanced workflow and reviewed the rendered HackerOne program page directly in Chrome rather than relying only on raw HTML.
+16. Confirmed high-value program rules on the rendered HackerOne page:
+   - create a Shopify account using the program's bug-bounty signup link
+   - test only against stores created by the researcher
+   - Shopify explicitly evaluates IDOR based on identifier predictability, data accessed, and overall impact
+17. Reviewed the rendered Shopify homepage and mapped broader attack surfaces including customer accounts, discounts, analytics, Shopify admin, App Store, developer docs, and partner/developer pathways.
+18. Reviewed the rendered Shopify developer docs and confirmed public access to `Apps`, `Storefronts`, `Agents`, CLI setup, App Store requirements, Theme Store requirements, and a developer `Log in` flow.
+19. Opened the public developer login route `http://dev.shopify.com/dashboard` and confirmed it redirects into `accounts.shopify.com/lookup` with request-specific `rid` and `verify` parameters.
+20. Reviewed the rendered Shopify account-login page and confirmed:
+   - email continuation
+   - passkey login
+   - Apple, Facebook, and Google external login links
+   - signup link bound to the same `rid`
+   - active `hCaptcha` network traffic on the page
+21. Revisited the public App Store homepage through DevTools and confirmed login and signup initiation routes with explicit `redirect_uri` and `return_to` parameters.
+22. Reviewed the public App Store app-detail page in more depth and confirmed:
+   - `login/initiate_shopify_auth_without_shop?...redirect_uri=...&return_to=...`
+   - app-detail comments/reviews surfaces
+   - partner/developer profile links
+   - demo store links
+   - public data-access descriptions for the app
+23. Noted that the app-detail page exposes a public demo-store link containing a long encoded `_bt` parameter and references to `permanent_password_bypass`, but no exploitable unauthorized access was confirmed in this round.
+24. Stopped after the strengthened pre-auth round because no directly supportable unauthenticated issue was confirmed and the next valuable step is likely authenticated testing with an owned Shopify bug-bounty store account.
+
+## 4A. Attack Surface Map
+- Public surfaces discovered:
+  - `www.shopify.com/au`
+  - `apps.shopify.com`
+  - specific App Store listing pages
+  - `shopify.dev/docs`
+- Auth-related surfaces discovered:
+  - `https://www.shopify.com/login?ui_locales=en-AU`
+  - `https://accounts.shopify.com/lookup?...rid=...&verify=...`
+  - App Store login-initiation flow
+  - App Store signup/store-create flow
+- Object-bearing surfaces discovered:
+  - App listing slugs such as `/affliate-by-secomapp`
+  - partner profile links
+  - review-filter links
+  - demo-store link on app pages
+- Billing / subscription / trial surfaces discovered:
+  - `Start free trial` / `store-create`
+  - app pricing sections on listing pages
+  - trial-related CTAs on homepage and App Store
+- Sharing / invitation / collaboration surfaces discovered:
+  - not yet confirmed in unauthenticated testing
+- App / developer / API / docs surfaces discovered:
+  - `shopify.dev/docs`
+  - App Store
+  - API documentation links
+  - Theme Store and partner links
+
+## 4B. DevTools Deep-Dive Notes
+- Key pages inspected with DevTools:
+  - HackerOne Shopify program page
+  - Shopify homepage
+  - Shopify developer docs
+  - Shopify App Store homepage
+  - Shopify App Store app-detail page
+  - Shopify account login page
+- Important XHR / fetch endpoints:
+  - `https://apps.shopify.com/.well-known/dux`
+  - `https://monorail-edge.shopifysvc.com/v1/produce`
+  - `https://accounts.shopify.com/.well-known/dux`
+  - `https://api2.hcaptcha.com/getcaptcha/...`
+- Interesting object IDs / UUIDs / team or workspace markers:
+  - login flow uses per-request `rid` UUID-like values
+  - login flow uses `verify` values tied to the request
+- Tokens / nonce / state / CSRF observations:
+  - App Store login-initiation URLs carry `redirect_uri` and `return_to`
+  - account login/signup flow carries `rid`
+  - developer login redirects into account lookup with `rid` and `verify`
+- Hidden parameters / embedded state / frontend routes:
+  - `store-create` links include `_s`, `_y`, `signup_page`, and `signup_types[]`
+  - App Store listing URLs include `surface_detail`, `surface_inter_position`, `surface_intra_position`, `surface_type`, and `surface_version`
+  - demo-store link exposed a long encoded `_bt` parameter
+- Bundle / source / feature-flag observations:
+  - no directly actionable feature-flag or hidden-route leak was confirmed in this round.
 
 ## 5. Evidence
 - Important URLs:
@@ -83,6 +166,7 @@
   - `https://shopify.dev/docs`
   - `http://dev.shopify.com/dashboard`
   - `https://apps.shopify.com/affliate-by-secomapp?...`
+  - `https://accounts.shopify.com/lookup?rid=...&verify=...`
 - Important requests/responses:
   - HackerOne Shopify program page raw HTML includes:
     - `Shopify - Bug Bounty Program | HackerOne`
@@ -98,6 +182,7 @@
     - public login resolves to `accounts.shopify.com/lookup`
     - login flow includes request-specific `rid` and `verify` query parameters
     - login options include email continuation and third-party identity providers
+    - rendered login page loads `hCaptcha`
   - Shopify developer docs observations:
     - `shopify.dev/docs` is publicly readable
     - visible `Log in` entry routes into Shopify-controlled login flow
@@ -105,13 +190,18 @@
   - Shopify App Store observations:
     - homepage and app-detail pages are publicly readable
     - login/install actions route into Shopify-controlled auth flows
+    - login initiation includes `redirect_uri` and `return_to`
     - parameterized listing URLs did not show obvious unsafe behavior in this round
+    - app-detail pages expose partner links, review filters, data-access summaries, and demo-store links
 - Screenshots / recordings: None yet.
 - Notes:
   - The direct HackerOne program page was readable through raw HTML and was reviewed first.
+  - The rendered HackerOne program page is especially useful for Shopify because it explicitly tells researchers to create accounts through the bug-bounty signup link and only test on stores they created.
+  - Shopify explicitly notes that IDOR eligibility depends on identifier predictability, accessed data, and overall impact.
   - The official homepage exposed a broader public product surface than Privy or Quora.
   - This makes Shopify more promising as a future independent-only candidate than some previously reviewed programs, even though no vulnerability was confirmed in this first round.
   - The developer docs and App Store are both useful public surfaces, but this pass still did not reveal a concrete auth flaw, data leak, or direct-object exposure.
+  - Shopify login and signup appear guarded by `hCaptcha`, so a later authenticated round will probably require manual registration/login by the user.
 
 ## 6. Outcome
 - Result: No finding
@@ -126,8 +216,9 @@
   - Did not begin authenticated testing.
   - Did not find an obvious open redirect, unauthenticated object exposure, or parameter-handling issue in the App Store surfaces reviewed.
 - Why no finding was confirmed yet:
-  - This round focused on public login/admin/dev/app-store entry points only.
+  - This round focused on public login/admin/dev/app-store entry points plus DevTools analysis only.
   - The more interesting Shopify bug classes likely require deeper follow-up inside authenticated merchant, developer, or partner contexts.
+  - Shopify itself instructs researchers to create and test only against their own bug-bounty stores, which points directly toward an authenticated next step.
 
 ## 7. Candidate Finding Details
 - Vulnerability title: None yet.
@@ -161,11 +252,13 @@
 
 ## 10. Next Actions
 - Follow-up validation needed:
-  - Check whether merchant, partner, or developer authenticated contexts can be entered later without excessive friction.
-  - Compare Shopify against Semrush as a candidate for the strongest low-friction follow-up target.
+  - If the team wants to continue, open the official bug-bounty signup path for Shopify and let the user register/login a compliant owned store account.
+  - After login, test merchant/admin/object surfaces with the enhanced workflow.
 - Questions for teammates:
-  - Should Shopify be promoted into the higher-priority shortlist for deeper public-surface testing?
-- Whether to keep testing this target: Later, but this public-surface 5-check round did not produce a finding.
+  - Should Shopify now become the next authenticated target?
+- Whether to keep testing this target: Yes. The next valuable step is authenticated testing, not more public-page review.
+- Next recommended testing state:
+  - Request login / registration
 
 ## 11. Files in This Folder
 - `target-test-log.md`
