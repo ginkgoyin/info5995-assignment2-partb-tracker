@@ -1,5 +1,13 @@
 # Target Test Log Template
 
+Use this template only when:
+- the target has a `Candidate finding`
+- the target is still `In progress` and already has non-trivial evidence worth preserving
+- the target is `Needs validation`
+- the target is `Reported`
+
+For ordinary `No finding` rounds, record only a concise summary in `partb/master-tracker.md`.
+
 ## 1. Basic Information
 - Date:
 - Platform:
