@@ -12,7 +12,7 @@ Use this file to avoid duplicate testing and to summarize progress across all al
 | 2026-04-23 | HackerOne | Quora | `https://hackerone.com/quora?type=team` | `https://www.quora.com/` | YX / Codex | Program-page review, homepage fetch behavior review, low-friction screening | No finding | None | `partb/targets/2026-04-23-hackerone-quora/` |
 | 2026-04-23 | HackerOne | Shopify | `https://hackerone.com/shopify?type=team` | `https://www.shopify.com/` | YX / Codex | Program intake, pre-auth DevTools review, authenticated partner/dashboard/stores/team/settings testing | No finding | None | `partb/targets/2026-04-23-hackerone-shopify/` |
 | 2026-04-23 | HackerOne | Poe | `https://hackerone.com/poe?type=team` | `https://poe.com/` | YX / Codex | Program URL validation, public login-surface review | Out of scope | None | `partb/targets/2026-04-23-hackerone-poe/` |
-| 2026-04-23 | HackerOne | Airtable | `https://hackerone.com/airtable?type=team` | `https://www.airtable.com/` | YX / Codex | Pre-auth UI + DevTools, authenticated account/builder/API, OIDC/session review, token/OAuth form review | No finding | None | `partb/targets/2026-04-23-hackerone-airtable/` |
+| 2026-04-23 | HackerOne | Airtable | `https://hackerone.com/airtable?type=team` | `https://www.airtable.com/` | YX / Codex | Pre-auth UI + DevTools, authenticated account/builder/API, OIDC/session review, token/OAuth form review, workspace/share/collaborator/invite review; no leak or bypass confirmed, current blocker is lack of second account and richer shared objects | No finding | None | `partb/targets/2026-04-23-hackerone-airtable/` |
 
 Status suggestions:
 - `Not started`
