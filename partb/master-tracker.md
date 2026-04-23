@@ -12,7 +12,7 @@ Use this file to avoid duplicate testing and to summarize progress across all al
 | 2026-04-23 | HackerOne | Quora | `www.quora.com` public homepage and direct program page | YX / Codex | Program-page review, homepage fetch behavior review, low-friction screening | No finding | None | `partb/targets/2026-04-23-hackerone-quora/` |
 | 2026-04-23 | HackerOne | Shopify | `www.shopify.com`, `apps.shopify.com`, `shopify.dev`, Shopify account-login, and authenticated Partners surfaces | YX / Codex | Program intake, pre-auth DevTools review, authenticated partner/dashboard/stores/team/settings testing | No finding | None | `partb/targets/2026-04-23-hackerone-shopify/` |
 | 2026-04-23 | HackerOne | Poe | Candidate HackerOne Poe URL and `poe.com` login surface | YX / Codex | Program URL validation, public login-surface review | Out of scope | None | `partb/targets/2026-04-23-hackerone-poe/` |
-| 2026-04-23 | HackerOne | Airtable | `www.airtable.com` public site plus Airtable login/signup and developer/API surfaces | YX / Codex | Program intake, pre-auth UI review, pre-auth DevTools review | In progress | None | `partb/targets/2026-04-23-hackerone-airtable/` |
+| 2026-04-23 | HackerOne | Airtable | `www.airtable.com` public site plus Airtable login/signup, account, builder hub, and developer/API surfaces | YX / Codex | Program intake, pre-auth UI review, pre-auth DevTools review, authenticated account/builder/API testing | No finding | None | `partb/targets/2026-04-23-hackerone-airtable/` |
 
 Status suggestions:
 - `Not started`

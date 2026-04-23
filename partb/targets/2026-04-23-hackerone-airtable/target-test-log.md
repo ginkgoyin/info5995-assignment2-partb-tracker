@@ -36,6 +36,12 @@
   - Airtable homepage
   - Airtable login page
   - Airtable signup page
+  - Authenticated Airtable home / onboarding page
+  - Authenticated account settings page
+  - Authenticated Builder Hub API-key page
+  - Authenticated personal access tokens page
+  - Authenticated OAuth integrations page
+  - Public developer API reference page
 - Vulnerability classes attempted:
   - Program intake and scope lock
   - Attack-surface mapping
@@ -45,12 +51,15 @@
   - Auth / session / invite / reset / verification flow pre-check
   - Token / parameter / binding pre-check
   - Misconfiguration / exposure pre-check
+  - Authenticated account-state confirmation
+  - Authenticated object and builder-surface review
+  - Authenticated token / OAuth / integration surface review
 - Baseline checklist status:
-  - 1. Access control / IDOR / object exposure: No direct unauthenticated object exposure confirmed in this round.
-  - 2. Authentication / session / invite / reset / verification / OAuth flow flaws: Public login and signup entry review completed.
-  - 3. Token / nonce / randomness / binding quality: Initial login/signup parameter and anti-automation review completed.
+  - 1. Access control / IDOR / object exposure: No direct unauthenticated exposure confirmed pre-auth; authenticated round exposed stable user and workspace identifiers but no cross-account access issue yet.
+  - 2. Authentication / session / invite / reset / verification / OAuth flow flaws: Public login/signup review completed; authenticated OIDC/session flows and OAuth builder surfaces reviewed.
+  - 3. Token / nonce / randomness / binding quality: Initial login/signup parameter review completed; authenticated round exposed PKCE/OIDC parameters and developer-token surfaces.
   - 4. Input handling / XSS / unsafe reflection: No obvious public reflected input issue confirmed in this round.
-  - 5. Misconfiguration / unsafe exposure / business logic boundary: Initial public-surface and developer/API exposure review completed.
+  - 5. Misconfiguration / unsafe exposure / business logic boundary: Public-surface and developer/API exposure review completed; authenticated builder/account pages reviewed.
 - Customized testing ideas:
   - After login, prioritize workspace/base sharing, API/developer surfaces, and account/workspace boundary checks.
   - Revisit developer docs and API objects once an owned account exists.
@@ -109,6 +118,54 @@
    - `PerimeterX` collector traffic
    - no direct unauthenticated vulnerability confirmed in this round
 15. Stopped after the pre-auth round because the next valuable step is authenticated testing with a user-created account.
+16. After the user logged in, confirmed access to an authenticated Airtable home screen with a first-run onboarding / app-building experience.
+17. Confirmed that the logged-in home flow exposed multiple authenticated user requests containing a stable Airtable user identifier:
+   - `usrKlp7S1Dg3HN8Eq`
+18. Confirmed authenticated home requests that enumerate user-scoped state:
+   - `getFavorites`
+   - `getMostRecentlyViewed`
+   - `getMostRecentlyOpenedWorkspaces`
+   - `listApplicationsAndPageBundlesForDisplay`
+19. Observed a full silent-auth OIDC flow in the authenticated session including:
+   - `app.airtable.com/auth/oidc/silentAuth`
+   - `airtable.com/oidc/auth?...code_challenge=...&nonce=...&state=...`
+   - `app.airtable.com/auth/oidc/callback?code=...&state=...`
+20. Opened the authenticated account settings page and confirmed:
+   - account identity `Erin YIN`
+   - email `erin1xiaohao@gmail.com`
+   - workspace link `My First Workspace`
+   - workspace identifier `wsps10QrDKzva8Ijq`
+   - account-level API, referrals, recent activity, privacy, and delete-account surfaces
+21. Reviewed the authenticated account page network activity and confirmed additional account-scoped endpoints:
+   - `getGoogleDriveIntegrationState`
+   - `getLastSyncedToGoogleDriveTime`
+22. Confirmed that the account page exposes an API/developer hub handoff instead of directly rendering secrets in place.
+23. Opened the authenticated Builder Hub API-key page at `https://airtable.com/create/apikey` and confirmed:
+   - API keys are deprecated
+   - the page exposes links to `Personal access tokens`, `Custom extensions`, `Secrets`, and `OAuth integrations`
+24. Reviewed the Builder Hub API-key page network activity and confirmed:
+   - `getApiKey`
+   - no active API key value was exposed in the UI during this round
+25. Opened the authenticated personal access tokens page and confirmed:
+   - `You have no personal access tokens`
+   - `Create token`
+26. Reviewed the personal access tokens page network activity and confirmed:
+   - `getPersonalAccessTokensForDevelopersHub`
+   - `getEnterpriseAccountsUserIsAdminOf`
+27. Opened the authenticated OAuth integrations page and confirmed:
+   - `You have no OAuth integrations`
+   - `Register an OAuth integration`
+28. Reviewed the OAuth page network activity and confirmed:
+   - `getOauthApplicationsForDevelopersHub`
+29. Opened the public developer API reference and confirmed the visible existence of developer documentation for:
+   - authentication
+   - scopes
+   - OAuth reference
+   - rate limits
+   - records
+   - collaborators / invites / shares
+   - workspaces / users / audit logs
+30. Stopped after approximately five meaningful authenticated checks because no supportable access-control bypass, exposed secret, token leak, or account-boundary failure was confirmed in this round.
 
 ## 4A. Attack Surface Map
 - Public surfaces discovered:
@@ -123,8 +180,14 @@
   - SSO sign-in
   - Google sign-in
   - Apple sign-in
+  - `app.airtable.com/auth/oidc/silentAuth`
+  - `app.airtable.com/auth/oidc/callback`
+  - `https://airtable.com/oidc/auth`
 - Object-bearing surfaces discovered:
-  - Not meaningfully exposed in this round before login.
+  - account settings
+  - `My First Workspace`
+  - Builder Hub developer surfaces
+  - token and OAuth management pages
 - Billing / subscription / trial surfaces discovered:
   - pricing page
   - signup flow
@@ -136,26 +199,52 @@
   - `https://airtable.com/developers/web/api/introduction`
   - `https://academy.airtable.com/`
   - `https://community.airtable.com/`
+  - `https://airtable.com/create/apikey`
+  - `https://airtable.com/create/tokens`
+  - `https://airtable.com/create/oauth`
+  - `https://airtable.com/create/secrets`
+  - `https://airtable.com/create/extensions`
 
 ## 4B. DevTools Deep-Dive Notes
 - Key pages inspected with DevTools:
   - `https://www.airtable.com/`
   - `https://airtable.com/login`
   - `https://airtable.com/signup`
+  - `https://airtable.com/`
+  - `https://airtable.com/account`
+  - `https://airtable.com/create/apikey`
+  - `https://airtable.com/create/tokens`
+  - `https://airtable.com/create/oauth`
+  - `https://airtable.com/developers/web/api/introduction`
 - Important XHR / fetch endpoints:
   - `https://airtable.com/internal/stats-batch`
   - `https://collector-px0ozadu9k.px-cloud.net/api/v2/collector`
   - multiple Airtable-hosted static bundle endpoints under `https://static.airtable.com/`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getFavorites`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getMostRecentlyViewed`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getMostRecentlyOpenedWorkspaces`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/listApplicationsAndPageBundlesForDisplay`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getAiPermissionsStateData`
+  - `https://airtable.com/account/getGoogleDriveIntegrationState`
+  - `https://airtable.com/account/getLastSyncedToGoogleDriveTime`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getApiKey`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getPersonalAccessTokensForDevelopersHub`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getEnterpriseAccountsUserIsAdminOf`
+  - `https://airtable.com/v0.3/user/usrKlp7S1Dg3HN8Eq/getOauthApplicationsForDevelopersHub`
 - Interesting object IDs / UUIDs / team or workspace markers:
-  - No concrete user/team/workspace object IDs were exposed pre-auth.
+  - user ID: `usrKlp7S1Dg3HN8Eq`
+  - workspace ID: `wsps10QrDKzva8Ijq`
 - Tokens / nonce / state / CSRF observations:
-  - No immediately actionable public token/nonce issue was confirmed in this round.
+  - Authenticated session used a silent OIDC flow with visible `code_challenge`, `nonce`, and `state` parameters.
+  - No immediately actionable token-binding failure or leak was confirmed in this round.
 - Hidden parameters / embedded state / frontend routes:
   - Login route loaded `run_signin.js`.
   - Signup route loaded `run_multistep_signup.js`.
+  - Authenticated builder pages are routed under `/create/...`.
 - Bundle / source / feature-flag observations:
   - Both login and signup flows are substantial Airtable-hosted frontend applications, not trivial redirect stubs.
   - `PerimeterX` is present in both login and signup flows, implying anti-automation or bot-detection logic.
+  - Authenticated account and builder pages expose a stable internal object model around user and workspace IDs, which is useful for later access-control testing.
 
 ## 5. Evidence
 - Important URLs:
@@ -164,6 +253,10 @@
   - `https://www.airtable.com/`
   - `https://airtable.com/login`
   - `https://airtable.com/signup`
+  - `https://airtable.com/account`
+  - `https://airtable.com/create/apikey`
+  - `https://airtable.com/create/tokens`
+  - `https://airtable.com/create/oauth`
   - `https://airtable.com/developers`
   - `https://airtable.com/developers/web/api/introduction`
 - Important requests/responses:
@@ -173,6 +266,12 @@
   - Signup page bundle: `run_multistep_signup.js`
   - Anti-automation traffic: `PerimeterX` init and collector requests
   - Airtable internal telemetry endpoint: `airtable.com/internal/stats-batch`
+  - Authenticated home/user-scoped requests included user ID `usrKlp7S1Dg3HN8Eq`
+  - Account page exposed workspace link `My First Workspace` with workspace ID `wsps10QrDKzva8Ijq`
+  - Builder Hub API-key page called `getApiKey`
+  - Token page called `getPersonalAccessTokensForDevelopersHub`
+  - OAuth page called `getOauthApplicationsForDevelopersHub`
+  - Authenticated silent-auth flow exposed OIDC `code_challenge`, `nonce`, and `state` parameters in the browser requests
 - Screenshots / recordings: None yet.
 - Notes:
   - This is a valid next-step target under the current workflow.
@@ -180,16 +279,22 @@
 
 ## 6. Outcome
 - Result: No finding yet after pre-auth round
+  and first authenticated round
 - What worked:
   - Confirmed a valid Airtable HackerOne program page.
   - Confirmed real signup and login flows.
   - Confirmed useful developer/API surfaces for later authenticated follow-up.
+  - Confirmed authenticated access to Airtable home, account settings, and Builder Hub.
+  - Confirmed stable user and workspace identifiers in authenticated requests and account settings.
+  - Confirmed developer/token/OAuth management surfaces exist and are reachable from the logged-in account.
 - What failed:
   - No unauthenticated object exposure, redirect issue, or obvious reflected-input issue was confirmed in this round.
+  - No exposed secret, reusable token, cross-account object access, or privilege-boundary flaw was confirmed in the authenticated round.
 - Why no finding was confirmed yet:
   - The higher-value Airtable attack surface likely sits behind authenticated workspace/base/account contexts.
+  - The current account is still in a very early state with only one visible workspace and no richer collaboration/base-sharing objects to compare.
 - Whether this target should be revisited only with a richer account state or second account:
-  - Continue immediately after user registration/login.
+  - Very likely yes if the team wants to push deeper into workspace sharing, invites, and API-boundary testing later.
 
 ## 7. Candidate Finding Details
 - Vulnerability title: None yet.
@@ -223,13 +328,13 @@
 
 ## 10. Next Actions
 - Follow-up validation needed:
-  - User should complete registration/login on the currently opened Airtable signup or login page.
+  - If the team wants to continue later, create richer test state inside the workspace and possibly prepare a second Airtable account for sharing/collaboration checks.
 - Questions for teammates:
-  - None.
+  - Should Airtable be revisited after creating a second account or shared base/workspace?
 - Whether to keep testing this target:
-  - Yes.
+  - Pause for now unless the team wants to invest in richer Airtable account state.
 - Next recommended testing state:
-  - Request login / registration
+  - Move to next program
 
 ## 11. Files in This Folder
 - `target-test-log.md`
