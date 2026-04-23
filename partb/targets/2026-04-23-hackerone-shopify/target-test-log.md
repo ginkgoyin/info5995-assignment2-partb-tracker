@@ -19,13 +19,16 @@
 - Tester(s): YX / Codex
 
 ## 2. Target Access
-- Account required: Likely yes for higher-value authenticated testing, but the public site already exposes many application entry points.
-- Account type(s) used: None.
+- Account required: Yes for higher-value authenticated testing.
+- Account type(s) used:
+  - One owned Shopify Partners bug-bounty account created by the user.
 - Registration/login notes:
   - The Shopify homepage exposes public `Log in` and `Start for free` entry points.
   - The `Start for free` call-to-action points to `admin.shopify.com`.
   - The public homepage also exposes clear links to `Customer Accounts`, `Shopify Admin`, `Shopify App Store`, and `shopify.dev`.
-- Role setup: Not started.
+- Role setup:
+  - Logged into a Shopify Partners bug-bounty account at `https://partners.shopify.com/4877777?signup_intent=bugbounty`.
+  - Current visible role is the owner of partner account `4877777`.
 - Whether a second account or second role may be needed:
   - Likely yes for deeper merchant-to-merchant or collaborator-boundary testing later.
 
@@ -38,6 +41,12 @@
   - Shopify developer documentation
   - Shopify App Store homepage
   - Shopify App Store app-detail page
+  - Authenticated Shopify Partners dashboard
+  - Authenticated `Stores` page
+  - Authenticated `Create Store` flow
+  - Authenticated `Team` page
+  - Authenticated `Settings` page
+  - Authenticated `Bug Bounty` page
 - Vulnerability classes attempted:
   - Program intake and scope lock
   - Attack-surface mapping
@@ -47,12 +56,15 @@
   - Auth / session / invite / reset / verification flow pre-check
   - Token / redirect / parameter-shape pre-check
   - Misconfiguration / unsafe exposure pre-check
+  - Authenticated account-state confirmation
+  - Authenticated access-control and object-surface review
+  - Authenticated partner/admin boundary review
 - Baseline checklist status:
   - 1. Access control / IDOR / object exposure: Pre-auth object and app-detail surface review completed; no direct unauthenticated exposure confirmed.
   - 2. Authentication / session / invite / reset / verification / OAuth flow flaws: Public auth-entry and login-initiation review completed.
   - 3. Token / nonce / randomness / binding quality: Initial `rid`, `verify`, `redirect_uri`, `return_to`, and signup parameter review completed.
   - 4. Input handling / XSS / unsafe reflection: Initial parameter and reflected-route review completed on App Store surfaces.
-  - 5. Misconfiguration / unsafe exposure / business logic boundary: Initial public-surface and developer/app-store exposure review completed.
+  - 5. Misconfiguration / unsafe exposure / business logic boundary: Initial public-surface and first authenticated partner-surface review completed.
 - Customized testing ideas:
   - Review whether `admin.shopify.com`, customer-account surfaces, or storefront/admin boundaries expose lower-friction public flows later.
   - Review whether app-store, developer, or admin-linked sub-surfaces offer better starting points than the main marketing site.
@@ -98,6 +110,29 @@
    - public data-access descriptions for the app
 23. Noted that the app-detail page exposes a public demo-store link containing a long encoded `_bt` parameter and references to `permanent_password_bypass`, but no exploitable unauthorized access was confirmed in this round.
 24. Stopped after the strengthened pre-auth round because no directly supportable unauthenticated issue was confirmed and the next valuable step is likely authenticated testing with an owned Shopify bug-bounty store account.
+25. Logged into a Shopify Partners bug-bounty account supplied by the user and confirmed access to the authenticated partner dashboard `https://partners.shopify.com/4877777?signup_intent=bugbounty`.
+26. Reviewed the authenticated partner dashboard and confirmed access to internal partner surfaces including `Stores`, `Sandbox organizations`, `Apps`, `Bug Bounty`, `Payments`, `Team`, and `Settings`.
+27. Reviewed the authenticated `Stores` page and confirmed the account currently exposes:
+   - create client-transfer store flow
+   - request collaborator access flow
+   - no existing store objects or cross-account store listings
+28. Reviewed the authenticated `Create Store` page and confirmed:
+   - partner-scoped creation flow under account `4877777`
+   - internal use of `https://atlas.shopifysvc.com/graphql`
+   - link to `Dev Dashboard` with a different numeric dashboard identifier
+   - no unauthorized pre-populated foreign store data
+29. Reviewed the authenticated `Team` page and confirmed:
+   - owner-only state with one visible owner entry
+   - membership detail link containing owner identifier `4968481`
+   - invite-owner and invite-staff flows
+   - no unexpected extra team members or leaked third-party membership data
+30. Reviewed the authenticated `Settings` page and confirmed:
+   - partner account identifier `4877777`
+   - account profile data for the current user
+   - management links for App Store registration, payout methods, billing, Partner API clients, and CLI tokens
+   - no indication that another partner account's sensitive settings were exposed
+31. Reviewed the authenticated `Bug Bounty` page and confirmed it is mainly an internal convenience page linking back to `https://hackerone.com/shopify` for reporting.
+32. Stopped after approximately five meaningful authenticated checks because no supportable access-control issue, token issue, or data exposure was confirmed in this round.
 
 ## 4A. Attack Surface Map
 - Public surfaces discovered:
@@ -120,12 +155,17 @@
   - app pricing sections on listing pages
   - trial-related CTAs on homepage and App Store
 - Sharing / invitation / collaboration surfaces discovered:
-  - not yet confirmed in unauthenticated testing
+  - team invitations
+  - owner invitations
+  - collaborator-access request flow for client stores
 - App / developer / API / docs surfaces discovered:
   - `shopify.dev/docs`
   - App Store
   - API documentation links
   - Theme Store and partner links
+  - authenticated partner `Dev Dashboard` link
+  - authenticated `Partner API clients` management link
+  - authenticated `CLI tokens` management link
 
 ## 4B. DevTools Deep-Dive Notes
 - Key pages inspected with DevTools:
@@ -140,6 +180,7 @@
   - `https://monorail-edge.shopifysvc.com/v1/produce`
   - `https://accounts.shopify.com/.well-known/dux`
   - `https://api2.hcaptcha.com/getcaptcha/...`
+  - `https://atlas.shopifysvc.com/graphql`
 - Interesting object IDs / UUIDs / team or workspace markers:
   - login flow uses per-request `rid` UUID-like values
   - login flow uses `verify` values tied to the request
@@ -153,6 +194,7 @@
   - demo-store link exposed a long encoded `_bt` parameter
 - Bundle / source / feature-flag observations:
   - no directly actionable feature-flag or hidden-route leak was confirmed in this round.
+  - authenticated partner pages expose stable internal numeric IDs in URLs, which may matter for later IDOR analysis if a second account becomes available.
 
 ## 5. Evidence
 - Important URLs:
@@ -167,6 +209,12 @@
   - `http://dev.shopify.com/dashboard`
   - `https://apps.shopify.com/affliate-by-secomapp?...`
   - `https://accounts.shopify.com/lookup?rid=...&verify=...`
+  - `https://partners.shopify.com/4877777?signup_intent=bugbounty`
+  - `https://partners.shopify.com/4877777/stores`
+  - `https://partners.shopify.com/4877777/stores/new?store_type=client_store`
+  - `https://partners.shopify.com/4877777/memberships`
+  - `https://partners.shopify.com/4877777/settings`
+  - `https://partners.shopify.com/4877777/bugbounty`
 - Important requests/responses:
   - HackerOne Shopify program page raw HTML includes:
     - `Shopify - Bug Bounty Program | HackerOne`
@@ -193,6 +241,11 @@
     - login initiation includes `redirect_uri` and `return_to`
     - parameterized listing URLs did not show obvious unsafe behavior in this round
     - app-detail pages expose partner links, review filters, data-access summaries, and demo-store links
+  - Authenticated Shopify Partners observations:
+    - partner account ID visible as `4877777`
+    - team owner detail link includes membership ID `4968481`
+    - `Create Store` page triggered `https://atlas.shopifysvc.com/graphql`
+    - settings page exposes management links for `partner_api_clients` and `cli_tokens`
 - Screenshots / recordings: None yet.
 - Notes:
   - The direct HackerOne program page was readable through raw HTML and was reviewed first.
@@ -202,9 +255,11 @@
   - This makes Shopify more promising as a future independent-only candidate than some previously reviewed programs, even though no vulnerability was confirmed in this first round.
   - The developer docs and App Store are both useful public surfaces, but this pass still did not reveal a concrete auth flaw, data leak, or direct-object exposure.
   - Shopify login and signup appear guarded by `hCaptcha`, so a later authenticated round will probably require manual registration/login by the user.
+  - The authenticated partner account is still in an early state with no populated stores, no extra team members, and no App Store registration, which limits deep access-control testing.
+  - The authenticated round exposed several promising object and admin surfaces, but no confirmed cross-account or privilege-boundary failure yet.
 
 ## 6. Outcome
-- Result: No finding
+- Result: No finding after pre-auth and first authenticated round
 - What worked:
   - Confirmed the direct HackerOne Shopify program page and official program description.
   - Confirmed that Shopify's public homepage exposes several concrete product and admin-adjacent entry points.
@@ -212,12 +267,15 @@
   - Confirmed that both public login and public admin entry points redirect into Shopify-controlled account-auth flows rather than exposing protected content.
   - Confirmed that `shopify.dev/docs` is a rich public developer surface and that its visible login entry also routes into controlled auth.
   - Confirmed that App Store listing pages are publicly readable but that install/login actions remain behind Shopify auth flows.
+  - Confirmed that a compliant bug-bounty partner account can be created and used to access internal partner surfaces.
+  - Confirmed the existence of authenticated store, team, settings, bug-bounty, and create-store surfaces for future testing.
 - What failed:
-  - Did not begin authenticated testing.
   - Did not find an obvious open redirect, unauthenticated object exposure, or parameter-handling issue in the App Store surfaces reviewed.
+  - Could not perform meaningful horizontal access-control testing because only one partner account existed and the account had no real populated stores or team members.
 - Why no finding was confirmed yet:
   - This round focused on public login/admin/dev/app-store entry points plus DevTools analysis only.
-  - The more interesting Shopify bug classes likely require deeper follow-up inside authenticated merchant, developer, or partner contexts.
+  - The first authenticated round focused on a fresh partner account with limited real objects.
+  - The more interesting Shopify bug classes likely require either a second owned account, a populated store, or richer collaborator/store state.
   - Shopify itself instructs researchers to create and test only against their own bug-bounty stores, which points directly toward an authenticated next step.
 
 ## 7. Candidate Finding Details
@@ -252,13 +310,13 @@
 
 ## 10. Next Actions
 - Follow-up validation needed:
-  - If the team wants to continue, open the official bug-bounty signup path for Shopify and let the user register/login a compliant owned store account.
-  - After login, test merchant/admin/object surfaces with the enhanced workflow.
+  - If the team wants to continue later, create at least one actual bug-bounty test store and possibly a second partner/store account for comparison.
+  - Revisit store-transfer, collaborator-access, team-invite, and partner API/CLI-token management boundaries once richer state exists.
 - Questions for teammates:
-  - Should Shopify now become the next authenticated target?
-- Whether to keep testing this target: Yes. The next valuable step is authenticated testing, not more public-page review.
+  - Should Shopify be revisited only after creating a populated test store or second account?
+- Whether to keep testing this target: Pause for now unless the team wants to invest in a richer Shopify account setup.
 - Next recommended testing state:
-  - Request login / registration
+  - Move to next program
 
 ## 11. Files in This Folder
 - `target-test-log.md`
