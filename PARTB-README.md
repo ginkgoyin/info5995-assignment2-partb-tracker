@@ -20,6 +20,12 @@ Recommended workflow:
 4. If a detailed folder is created, copy `partb/templates/target-test-log-template.md` and store any screenshots, request samples, and notes there.
 5. Commit and push after meaningful updates.
 
+Documentation rules:
+1. The master tracker records every tested target, including which baseline categories `1-5` were tested and the concise result.
+2. `No finding` targets should normally stay lightweight in `partb/master-tracker.md` rather than creating a full detailed folder.
+3. Create a detailed folder under `partb/targets/` when the target has a `Candidate finding`, remains `In progress` with non-trivial preserved evidence, `Needs validation`, or `Reported`.
+4. If a target moves toward submission-readiness, preserve the exact URLs, screenshots, request/response notes, scope proof, and novelty notes needed for later presentation and Q&A.
+
 Enhanced testing order for each program:
 1. Program intake and scope lock.
    - Read the HackerOne program page, overview, and scope before testing.
@@ -75,6 +81,40 @@ Minimum information to record for each tested target:
 - Novelty notes
 - Next actions
 
+Assignment rules and grading reference:
+- Part B targets must come only from legitimate bug bounty programs or the explicitly allowed company-run programs named in the assignment spec.
+- Approved bug bounty platforms in the spec:
+  - `HackerOne`
+  - `Immunefi`
+  - `Bugcrowd`
+  - `Intigriti`
+  - `YesWeHack`
+- Explicitly allowed company-run programs in the spec:
+  - `Google VRP`
+  - `Meta Bug Bounty`
+  - `Microsoft Bug Bounty`
+  - `Apple Security Bounty`
+  - `GitHub Bug Bounty`
+  - `OpenClaw Bug Bounty`
+  - `Anthropic Model Safety Bug Bounty`
+  - `OpenAI Bug Bounty Program`
+- Any other company-run target requires prior written unit coordinator approval before testing.
+- Part B is judged primarily on the team's single highest-impact valid in-the-wild finding.
+- If no valid in-the-wild finding is submitted, the assignment maximum is capped at `15/25`.
+- Only one Part B finding is ultimately submitted and defended.
+- Required evidence for a strong Part B result includes:
+  - target URL
+  - scope proof
+  - legal-boundary note
+  - reproducible steps
+  - screenshots or request evidence
+  - clear finding-type classification:
+    - `Type 1`: confirmed non-zero-day
+    - `Type 2`: zero-day candidate
+- If a claimed zero-day does not have novelty evidence, it should be treated as `Type 1`.
+- Severity should follow the platform model where available, with CVSS fallback if needed.
+- Before final submission, the team should run at least one rubric-driven mock Q&A and record the improvement notes in the AI log.
+
 Why this workflow is stronger:
 - It aligns testing with the assignment's real scoring needs: scope handling, evidence quality, impact clarity, and novelty readiness.
 - It treats DevTools review as a required step rather than an optional helper.
@@ -87,3 +127,4 @@ Practical reminder for this assignment:
 - Documentation quality matters, but empty-round documentation should stay lightweight.
 - If a flow looks security-relevant, the default is to try to validate it, not just describe it.
 - Stay within scope, use only owned accounts/objects, avoid destructive behavior, and prefer non-disruptive abnormal-input testing.
+- Do not test on other users' data, use brute force, run disruptive checks, or perform social engineering.
