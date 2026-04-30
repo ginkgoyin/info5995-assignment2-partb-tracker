@@ -4,7 +4,7 @@ Use this file to avoid duplicate testing and to summarize progress across all al
 
 | Date | Platform | Program | Program bounty URL | Program URL | Tester(s) | Tested areas / methods | Status | Candidate Finding | Folder |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-04-22 | TBD | TBD | TBD | TBD | TBD | TBD | Not started | None | `partb/targets/` |
+| 2026-04-30 | HackerOne | TripAdvisor | `https://hackerone.com/tripadvisor?type=team` | `https://www.tripadvisor.com/` | YX / Codex | Current-program existence validation via HackerOne public bug-bounty listing, homepage/public-surface review, owner/management-center entry-point mapping | In progress | None | `partb/targets/2026-04-30-hackerone-tripadvisor/` |
 | 2026-04-22 | HackerOne | Basecamp | `https://hackerone.com/basecamp?type=team` | `https://basecamp.com/` | YX / Codex | Scope review, authenticated object/ID testing, cross-bucket object-binding checks on project/message/document/upload/schedule URLs, invite-flow form inspection, preview/storage direct-link checks in isolated context | No finding | None | `partb/targets/2026-04-22-hackerone-basecamp/` |
 | 2026-04-23 | HackerOne | Semrush | `https://hackerone.com/semrush?type=team` | `https://www.semrush.com/` | YX / Codex | Program review, pre-login rendered testing, authenticated surface review, reports/apps boundary checks | No finding | None | `partb/targets/2026-04-23-hackerone-semrush/` |
 | 2026-04-23 | HackerOne | GitLab | `https://hackerone.com/gitlab?type=team` | `https://gitlab.com/` | YX / Codex | Program-page review, signup flow analysis, login fetch behavior review | In progress | None | `partb/targets/2026-04-23-hackerone-gitlab/` |
