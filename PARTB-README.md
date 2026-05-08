@@ -8,6 +8,7 @@ Goals:
 - Preserve scope evidence, test steps, findings, and rejection reasons.
 - Keep records ready for AI log, activity log, presentation, and tutor review.
 - Keep the main effort focused on actually finding at least one valid Part B vulnerability rather than over-documenting empty rounds.
+- Detailed documentation is reserved for targets that actually produce a vulnerability or a strong candidate finding; non-finding rounds should stay concise in the master tracker.
 
 Recommended workflow:
 1. Always update `partb/master-tracker.md` after each testing session.
@@ -24,8 +25,10 @@ Documentation rules:
 1. The master tracker records every tested target, including which baseline categories `1-5` were tested and the concise result.
 2. `No finding` targets should normally stay lightweight in `partb/master-tracker.md` rather than creating a full detailed folder.
 3. Create a detailed folder under `partb/targets/` when the target has a `Candidate finding`, remains `In progress` with non-trivial preserved evidence, `Needs validation`, or `Reported`.
-4. If a target moves toward submission-readiness, preserve the exact URLs, screenshots, request/response notes, scope proof, severity evidence, reproducibility evidence, and novelty/public-disclosure notes needed for later presentation and Q&A.
-5. For a serious candidate finding, explicitly record:
+4. In practice, if no vulnerability has been found yet, prefer recording only a concise summary in `partb/master-tracker.md`.
+5. Only record full technical detail when there is an actual vulnerability, a strong candidate finding, or preserved evidence that is likely to turn into a real finding.
+6. If a target moves toward submission-readiness, preserve the exact URLs, screenshots, request/response notes, scope proof, severity evidence, reproducibility evidence, and novelty/public-disclosure notes needed for later presentation and Q&A.
+7. For a serious candidate finding, explicitly record:
    - platform severity/priority label if available
    - normalized severity tier hypothesis (`S0-S4`)
    - impact-evidence notes
