@@ -24,7 +24,16 @@ Documentation rules:
 1. The master tracker records every tested target, including which baseline categories `1-5` were tested and the concise result.
 2. `No finding` targets should normally stay lightweight in `partb/master-tracker.md` rather than creating a full detailed folder.
 3. Create a detailed folder under `partb/targets/` when the target has a `Candidate finding`, remains `In progress` with non-trivial preserved evidence, `Needs validation`, or `Reported`.
-4. If a target moves toward submission-readiness, preserve the exact URLs, screenshots, request/response notes, scope proof, and novelty notes needed for later presentation and Q&A.
+4. If a target moves toward submission-readiness, preserve the exact URLs, screenshots, request/response notes, scope proof, severity evidence, reproducibility evidence, and novelty/public-disclosure notes needed for later presentation and Q&A.
+5. For a serious candidate finding, explicitly record:
+   - platform severity/priority label if available
+   - normalized severity tier hypothesis (`S0-S4`)
+   - impact-evidence notes
+   - finding type:
+     - `Type 1`: confirmed non-zero-day
+     - `Type 2`: zero-day candidate
+     - `Zero-day duplicate`
+   - public-disclosure search notes
 
 Enhanced testing order for each program:
 1. Program intake and scope lock.
@@ -58,7 +67,7 @@ Enhanced testing order for each program:
 9. Decide whether a second account or second role is worth it.
    - Escalate to multi-account or multi-role testing only when the target shows meaningful collaboration, invitation, sharing, or ownership boundaries.
 10. Evidence and submission-readiness check.
-   - Before calling something a candidate finding, confirm reproducibility, scope proof, impact explanation, screenshots/requests, and enough evidence to defend it in the presentation and Q&A.
+   - Before calling something a candidate finding, confirm reproducibility, scope proof, legal-boundary note, impact explanation, screenshots/requests, severity support, finding-type classification, novelty/public-disclosure evidence, and enough evidence to defend it in the presentation and Q&A.
 11. Stop and decide.
    - After each meaningful round, stop and decide whether to continue the same program, request login, request a second account, or move on to the next program.
 
@@ -78,6 +87,9 @@ Minimum information to record for each tested target:
 - Result, including failures and dead ends
 - Evidence and screenshots
 - Initial impact assessment
+- Platform severity / priority if available
+- Normalized severity estimate (`S0-S4`)
+- Finding-type classification (`Type 1`, `Type 2`, or zero-day duplicate)
 - Novelty notes
 - Next actions
 
@@ -102,6 +114,10 @@ Assignment rules and grading reference:
 - Part B is judged primarily on the team's single highest-impact valid in-the-wild finding.
 - If no valid in-the-wild finding is submitted, the assignment maximum is capped at `15/25`.
 - Only one Part B finding is ultimately submitted and defended.
+- Part B scoring is now explicitly split into:
+  - `2 marks`: finding quality / scope handling
+  - `10 marks`: highest-impact finding (`severity + impact evidence + novelty`, capped at 10)
+  - `3 marks`: recorded presentation + Q&A
 - Required evidence for a strong Part B result includes:
   - target URL
   - scope proof
@@ -111,8 +127,24 @@ Assignment rules and grading reference:
   - clear finding-type classification:
     - `Type 1`: confirmed non-zero-day
     - `Type 2`: zero-day candidate
+- Updated 4 May clarification:
+  - `Type 1` counts only if it is publicly known/reported and still exploitable on the tested target/version at submission time
+  - a publicly known issue that is already fixed does not count
+  - `Type 2` means valid + reproducible + no public disclosure found at submission time
+  - `zero-day duplicate` means valid but already privately reported earlier; novelty should be treated as `1`
 - If a claimed zero-day does not have novelty evidence, it should be treated as `Type 1`.
 - Severity should follow the platform model where available, with CVSS fallback if needed.
+- Severity precedence rule:
+  - use platform-assigned severity/priority where available
+  - use CVSS v3.1 style fallback only if the platform label is missing
+  - student-claimed severity without evidence cannot exceed `S2`
+- Zero-day priority rule:
+  - top Part B bands are reserved for well-supported zero-day candidates
+  - confirmed non-zero-day findings can still score, but only if they are publicly known/reported and still exploitable
+- Leaderboard vs final-submission clarification:
+  - leaderboard acceptance is stricter and only accepts vendor-confirmed zero-days and zero-day duplicates
+  - final submission may still include one most severe vulnerability that is not publicly known even if it is not vendor-confirmed
+- If a finding appears higher than `Medium`, escalate it to the unit coordinator before doing anything risky or disruptive.
 - Before final submission, the team should run at least one rubric-driven mock Q&A and record the improvement notes in the AI log.
 
 Why this workflow is stronger:
@@ -128,3 +160,5 @@ Practical reminder for this assignment:
 - If a flow looks security-relevant, the default is to try to validate it, not just describe it.
 - Stay within scope, use only owned accounts/objects, avoid destructive behavior, and prefer non-disruptive abnormal-input testing.
 - Do not test on other users' data, use brute force, run disruptive checks, or perform social engineering.
+- Do not call something a zero-day candidate unless public-disclosure checks have actually been done and recorded.
+- For any strong candidate, keep enough severity/impact/novelty notes so the final 5-minute presentation and tutorial Q&A can be defended without redoing the analysis.
