@@ -340,6 +340,44 @@ If the goal is the safest and most practical Part B workflow for this repository
 4. `TripAdvisor`
 5. `GitHub`
 
+## Expanded target bank (+20 additional targets)
+
+These are additional screened targets to extend the working queue. They are not all equal priority, but they are all within the assignment's allowed-source model and are worth considering once the highest-priority set is exhausted or blocked.
+
+| # | Program | Platform | Program / bounty URL | Official website | Why it is worth keeping in the queue | Main caution |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | Semrush | HackerOne | `https://hackerone.com/semrush?type=team` | `https://www.semrush.com/` | Real account/report/app surfaces and good DevTools visibility | Likely needs richer owned objects for stronger access-control findings |
+| 2 | Asana | HackerOne | `https://hackerone.com/asana?type=team` | `https://asana.com/` | Strong collaboration and object-ID surface: task/project/profile/share | Best results likely need multi-account or multi-role testing |
+| 3 | RubyGems | HackerOne | `https://hackerone.com/rubygems?type=team` | `https://rubygems.org/` | Good auth/session/OIDC/API-key/trusted-publisher attack surface | Less traditional object-IDOR surface than collaboration apps |
+| 4 | SHEIN | HackerOne | `https://hackerone.com/shein?type=team` | `https://us.shein.com/` | Large consumer account/order/coupon/address surface with many BFF/API calls | E-commerce account state can be noisy; avoid risky purchase flows |
+| 5 | Zooplus | HackerOne | `https://hackerone.com/zooplus?type=team` | `https://www.zooplus.com/` | Strong account/order/invite/cart/customer-data surfaces; real object APIs | Need to separate public/low-sensitivity API data from true unauthorized exposure |
+| 6 | Vimeo | HackerOne | `https://hackerone.com/vimeo?type=team` | `https://vimeo.com/` | Clear JWT-backed API flows, object IDs, onboarding/survey/authenticated API surface | Some returned data may be intentionally low-sensitivity; validate impact carefully |
+| 7 | Atlassian | HackerOne | `https://hackerone.com/atlassian` | `https://www.atlassian.com/` | Rich collaboration/admin ecosystem with account, org, and project boundaries | Product family is broad; scope confirmation must be tight before testing |
+| 8 | Automattic | HackerOne | `https://hackerone.com/automattic` | `https://automattic.com/` | Covers web products with normal account flows and public web surfaces | Need strict per-asset scope checking because the portfolio is broad |
+| 9 | Audible | HackerOne | `https://hackerone.com/audible` | `https://www.audible.com/` | Consumer account/library/subscription surface is promising for auth/account logic | Tighter commercial account flows; avoid anything affecting purchases you do not own |
+| 10 | CloudBees | HackerOne | `https://hackerone.com/cloudbees` | `https://www.cloudbees.com/` | Enterprise web surface may expose account/admin/dev integration logic | Likely less beginner-friendly without meaningful workspace/org setup |
+| 11 | Flickr | HackerOne | `https://hackerone.com/flickr` | `https://www.flickr.com/` | Media objects, sharing, albums, and privacy settings are good for IDOR/privacy testing | Need to avoid touching other users' media; owned-content setup is important |
+| 12 | Robinhood Markets | HackerOne | `https://hackerone.com/robinhood` | `https://robinhood.com/` | Strong account/session/authentication interest | Financial account workflows raise safety stakes; proceed very conservatively |
+| 13 | Trip.com | HackerOne | `https://hackerone.com/trip_com` | `https://www.trip.com/` | Travel booking/account/order object flows can be good for access-control checks | Booking/payment surfaces can get risky quickly; keep to owned low-risk objects |
+| 14 | ZoomInfo | HackerOne | `https://hackerone.com/zoominfo` | `https://www.zoominfo.com/` | Web account and data-access boundaries may be promising | Likely stronger value in business-account workflows than public browsing |
+| 15 | Superhuman (formerly Grammarly) | HackerOne | `https://hackerone.com/superhuman` | `https://superhuman.com/` | High-value auth/invite/account/productivity workflow surface | Setup friction may be higher than consumer-web targets |
+| 16 | Flipkart | HackerOne | `https://hackerone.com/flipkart` | `https://www.flipkart.com/` | Large e-commerce account/order/address/cart/coupon surface | Regional/account friction may slow setup; stay within owned consumer flows |
+| 17 | Google VRP | Company-run | `https://bughunters.google.com/about/rules` | `https://bughunters.google.com/` | Enormous attack surface and high upside if a valid issue is found | Scope is huge and easily distracting; not ideal as a first-stop beginner target |
+| 18 | Meta Bug Bounty | Company-run | `https://www.facebook.com/whitehat` | `https://www.facebook.com/whitehat` | Mature program with many web and account surfaces | Heavily researched; requires disciplined, high-signal testing to stand out |
+| 19 | Microsoft Bug Bounty | Company-run | `https://www.microsoft.com/en-us/msrc/bounty` | `https://www.microsoft.com/en-us/msrc/bounty` | Huge platform and product coverage | Too broad for unfocused hunting; choose only if a clear asset/workflow is selected first |
+| 20 | Apple Security Bounty | Company-run | `https://security.apple.com/bounty/` | `https://security.apple.com/bounty/` | Officially allowed by the assignment and high-impact in theory | Poor fit for our current web-first workflow; keep only as a late-stage option |
+
+### How to use this expanded bank
+
+- Start from the main recommended order first.
+- If a target is blocked by account setup, environment complexity, or poor signal quality, move to the next entry rather than forcing it too long.
+- Prefer targets with:
+  - clear owned-account workflows
+  - obvious object references
+  - share/invite/order/project/workspace boundaries
+  - inspectable XHR/fetch and token/state/ID flows
+- Treat the company-run mega-programs as strategic backups, not default first-line options.
+
 ## Evidence standards to apply to every target
 
 For any target that moves beyond screening, the evidence package should include:
